@@ -1,0 +1,365 @@
+<html>
+
+<head>
+	<style>
+		canvas {
+			border: 1px solid black;
+		}
+		
+		#statusBar {
+			height: 20px;
+		}
+		
+		.col {
+			float: left;
+			margin-right: 10px;
+		}
+		
+		.debugPanel {
+			font-family: "Consolas";
+			font-size: 12px;
+			overflow-y: scroll;
+			overflow-x: hidden;
+			height: 300px;
+			width: 300px;
+		}
+		
+		#entitiesList div {
+			margin: 5px 5px;
+		}
+	</style>
+</head>
+
+<body onload="main()">
+	<div class="col">
+		<div id="statusBar"></div>
+		<canvas id="c" class="col" width="600" height="300"></canvas>
+		<div class="col">
+			<div id="entitiesList" class="debugPanel"></div>
+		</div>
+		<div class="col">
+			<pre id="debug" class="debugPanel"></pre>
+		</div>
+	</div>
+	
+	<script type="text/javascript" src="js/steerMngr.js"></script>
+	<script type="text/javascript" src="js/stateMngr.js"></script>
+	<script type="text/javascript" src="js/crit.js"></script>
+	<script type="text/javascript">
+
+var _cursor_loc = [0, 0];
+document.getElementById("c").addEventListener("mousemove", function(e){
+	_cursor_loc[0] = e.offsetX;
+	_cursor_loc[1] = e.offsetY;
+	
+	document.getElementById("statusBar").innerHTML = _cursor_loc;
+});
+
+var _debug_panel = document.getElementById("debug");
+var _debugMsg = "";
+function _setDebugMsg(text, source) {
+	if (source){
+		_debugMsg += source + ": ";
+	}
+	_debugMsg += text + "\n";
+}
+setInterval(function(){
+	if (_env){
+		for(var i=0; i<_env.entities.length; i++){
+			var et = _env.entities[i];
+			var htmlEl = document.getElementById(et.name);
+			if (htmlEl != null && et.type == "crit")
+				htmlEl.innerHTML = et.name + ": " + et.SM.currState.name + ": " + et.energy.toPrecision(2);
+			
+		}
+		
+		
+	}
+	
+	_debug_panel.innerHTML = _debugMsg;
+	_debugMsg = "";
+}, 250);
+
+// ---------------------------------------
+//				M A I N
+// ---------------------------------------
+var _canvas = document.getElementById("c"); 
+var _ctx = _canvas.getContext("2d");
+var _env; 
+var _prevTime = 0;
+	
+function main() {
+	_env = new Environment();
+	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
+	
+	for (var i = 0; i < 1; i++){
+		_env.add(new Resource({
+			name: "food" + i,
+			type: "food",
+			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
+		}));
+	}
+	
+	for (var i = 0; i < 1; i++){
+		var newCrit = new Crit({
+			name: "crit" + i,
+			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
+			dir: [getRandf(-1, 1), getRandf(-1, 1)],
+			env: _env
+		});
+		
+		_env.add(newCrit);
+	}
+	
+	// var e1,e2;
+	// e1 = _env.getEntityByName("crit0"); 
+	// e1.status = "WANDER";
+	// e1.maxSpeed = 13;
+	// e2 = _env.getEntityByName("crit1");
+	// e2.status = "PURSUIT";
+	// e2.target = e1;
+	
+	var entList = document.getElementById("entitiesList");
+	for (var i = 0; i < _env.entities.length; i++){
+		var et = _env.entities[i];
+		entList.innerHTML += "<div " + "id=\"" + et.name + "\">"+et.name+"</div>" ;
+		et.htmlEl = document.getElementById(et.name);
+	}
+	
+	loop();
+}
+
+function tick(delta) {
+	_ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
+	_env.update(delta);
+		
+	_env.draw(_ctx);
+}
+
+var _deltaTime = 0;
+function loop(currTime) {
+	if (currTime){
+		_deltaTime = currTime - _prevTime;
+		_prevTime = currTime;
+		
+		_deltaTime = Math.floor(_deltaTime);
+		tick(_deltaTime);
+	}
+	requestAnimationFrame(loop);
+}
+
+// ---------------------------------------
+//			C L A S S E S
+// ---------------------------------------
+
+function test(){
+	_env.draw(_ctx);
+	_env.entities[0].findFood();
+	_env.draw(_ctx);
+}
+
+
+
+var Resource = function(args){
+	this.name = args.name || "res"
+	this.type = args.type || "default";
+	this.isActive = true;
+	this.pos = args.pos || [0, 0];
+	this.units = 2;
+	
+	this.draw = function(ctx) {
+		ctx.strokeStyle = "rgb(0,190,0)";
+		ctx.beginPath();
+		ctx.arc(this.pos[0], this.pos[1], this.units, 0, 2*Math.PI);
+		ctx.stroke();
+	}
+	this.update = function(deltaTime) {
+		if (this.units <= 0) {
+			this.isActive = false;
+			this.units = 0;
+		}
+	}
+	this.drain = function(delta) {
+		var amount = Math.min(this.units, delta);
+		this.units -= amount;
+		return amount;
+	}
+}
+
+var Environment = function() {
+	this.entities = [];
+	var minX, minY, maxX, maxY;
+	
+	this.setBounds = function(bounds) {
+		minX = bounds[0];
+		minY = bounds[1];
+		maxX = bounds[2];
+		maxY = bounds[3];
+	}
+	
+	this.add = function(entity) {
+		var bAdded = false;
+		for (var i = 0; i < this.entities.length; i++) {
+			if (!this.entities[i].isActive) {
+				this.entities[i] = entity;
+				bAdded = true;
+			}
+		}
+		if (!bAdded){
+			this.entities.push(entity);
+		}
+	}
+		
+	this.update = function (deltaTime) {
+		for (var i = 0; i < this.entities.length; i++) {
+			var et = this.entities[i];
+			if (et.isActive && et.update) {
+				et.update(deltaTime);
+				wrapAround(et);
+			}
+		}
+	}
+	
+	this.draw = function (context) {
+		for (var i = 0; i < this.entities.length; i++) {
+			if (this.entities[i].isActive)
+				this.entities[i].draw(context);
+		}
+	}
+	
+	this.getEntityByName = function(name) {
+		for (var i=0; i<this.entities.length; i++) { 
+			if (this.entities[i].name == name){ 
+				return this.entities[i];
+			}
+		}
+		return null;
+	}
+	
+	this.getNearbyEntities = function(pos, range) {
+		var eList = [];
+		for (var i=0; i<this.entities.length; i++){
+			var ent = this.entities[i];
+			var d = vec2dist(pos, ent.pos);
+			if (ent.isActive && d <= range) {
+				eList.push({
+					entity: ent, 
+					distance: d
+				});
+			}
+		}
+		return eList;
+	}
+	
+	this.findClosestEntity = function(pos, etype){
+		var target = null,
+		minDist = 999999;
+		for (var i=0; i<this.entities.length; i++){
+			var ent = this.entities[i];
+			if (ent.type == etype && ent.isActive){
+				var dist = vec2dist(pos, ent.pos);
+				
+				if (dist < minDist){
+					target = ent;
+					minDist = dist;
+				}
+			}
+		}
+		
+		return target;
+	}
+	
+	function wrapAround(entity){
+		var x = entity.pos[0],
+		y = entity.pos[1];
+		if (x > maxX)
+			x = minX;
+		if (x < minX)
+			x = maxX;
+		if (y > maxY)
+			y = minY;
+		if (y < minY)
+			y = maxY;
+			
+		entity.pos[0] = x;
+		entity.pos[1] = y;
+	}
+}
+
+// ---------------------------------------
+//				U T I L S
+// ---------------------------------------
+/**
+ * adds two vector2 
+ * 
+ * @param {number} a the first operand
+ * @param {number} b the second operand
+ * @returns {number} out
+*/
+function vec2addv(a, b) {
+	return [ a[0] + b[0], a[1] + b[1] ];
+};
+function vec2subv(a, b) {
+	return [ a[0] - b[0], a[1] - b[1] ];
+};
+function vec2muls(v, s) {
+	return [ v[0] * s, v[1] * s ];
+};
+function vec2mulv(a, b) {
+	return [ a[0] * b[0], a[1] * b[1] ];
+};
+function vec2divs(v, s) {
+	return [ v[0] / s, v[1] / s ];
+};
+function vec2divv(a, b) {
+	return [ a[0] / b[0], a[1] / b[1] ];
+};
+function vec2trunc(v, smax) {
+	if (vec2len(v) > smax) {
+		v = vec2norm(v);
+		v = vec2muls(v, smax);
+	}
+};
+function vec2norm(v) {
+	var x = v[0],
+		y = v[1];
+	var len = x*x + y*y;
+	if (len > 0) {
+		len = 1 / Math.sqrt(len);
+		x = x * len;
+		y = y * len;
+	}
+	return [x, y];
+};
+function vec2len(v){
+	var x = v[0],
+		y = v[1];
+	return Math.sqrt(x*x + y*y);
+}
+function vec2dist(a, b){
+	return vec2len(vec2subv(b, a));
+}
+function vec2IsZero(v) {
+	return ((v[0] === 0) && (v[1] === 1));
+}
+
+function vec2ToString(v) {
+	var p = 3
+	return "["+v[0].toPrecision(p)+","+v[1].toPrecision(p)+"]";
+}
+
+function getRand() {
+  return Math.random();
+}
+
+function getRandi(min, max) {
+  return Math.floor(getRand() * (max - min)) + min;
+}
+
+function getRandf(min, max) {
+  return getRand() * (max - min) + min;
+}
+	</script>
+</body>
+
+</html>
