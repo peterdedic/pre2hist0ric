@@ -6,17 +6,17 @@ var Crit = function (args) {
 	this.env = args.env;
 	this.dir = vec2norm(args.dir || [1, 0]);
 	this.speed = 0;
-	this.maxSpeed = args.speed || 10;
-	this.vel = 0;
+	this.maxSpeed = args.maxSpeed || 10;
 	this.maxAcc = args.maxAcc || 0.1;
+	this.vel = [0, 0];
 	this.stamina = 10;
 	this.energy = 10;
 	this.steer = new Steer(this);
 	this.SM = new StateMngr(this);
-	this.SM.changeState(new states.Test());
+	this.SM.changeState(new states.Idle());
 	
 	this._TOUCH_RANGE = 10;
-	this._SEE_RANGE = 150;
+	this._SEE_RANGE = 50;
 	this._LOW_ENERGY_THRESHOLD = 9;
 	
 	this.nearbyEnts = [];
@@ -24,8 +24,8 @@ var Crit = function (args) {
 };
 
 Crit.prototype.draw = function(ctx) {
-	var b = vec2addv(this.pos, vec2muls(vec2norm(this.vel), 10));
-	//var b = vec2addv(this.pos, this.vel);
+	//var b = vec2addv(this.pos, this.dir, 10));
+	var b = vec2addv(this.pos, this.vel);
 	ctx.strokeStyle = "#000000";
 	ctx.beginPath();
 	ctx.moveTo(this.pos[0], this.pos[1]);
@@ -54,22 +54,25 @@ Crit.prototype.draw = function(ctx) {
 };
 
 Crit.prototype.update = function(deltaTime) {
-	this.nearbyEnts = this.env.getNearbyEntities(this.pos, this._TOUCH_RANGE);
+	this.nearbyEnts = this.env.getNearbyEntities(this.pos, this._SEE_RANGE);
 			
 	// ------ S T E E R I N G -----------
 	this.SM.update(deltaTime);
 	
 	this.steer.apply();
 	// --------- APPLY VELOCITY ---------
-	vec2trunc(this.vel, this.getSpeed());
-	this.pos = vec2addv(this.pos, vec2divs(this.vel, deltaTime))
+	this.dir = vec2norm(this.vel);
+	this.speed = vec2len(this.vel);
+	this.speed = Math.min(this.speed, this.maxSpeed);				// truncate speed to max
+	this.vel = vec2muls(this.dir, this.speed);
+	this.pos = vec2addv(this.pos, vec2divs(this.vel, deltaTime));
 	
 	this.energy -= 0.05 / deltaTime;
 };
 
 Crit.prototype.canSee = function(sResourceType) {
 	for(var i=0; i<this.nearbyEnts.length; i++){
-		if (this.nearbyEnts[i].type == sResourceType)
+		if (this.nearbyEnts[i].entity.type === sResourceType)
 			return true;	
 	}
 	return false;
@@ -86,17 +89,17 @@ Crit.prototype.canEat = function() {
 	}
 	return false;
 };
-Crit.prototype.consume = function() {
-	this.energy += this.food.drain(0.5 / deltaTime);
+Crit.prototype.eat = function() {
+	this.energy += this.target.drain(0.05);
 };
 Crit.prototype.isHungry = function() {
 	return (this.energy < this._LOW_ENERGY_THRESHOLD);
 };
 Crit.prototype.pickFoodSource = function() {
 	for(var i=0; i<this.nearbyEnts.length; i++){
-		if (this.nearbyEnts[i].type === "food") {
-			this.target = this.nearbyEnts[i]; 
-			return this.nearbyEnts[i].pos;
+		if (this.nearbyEnts[i].entity.type === "food") {
+			this.target = this.nearbyEnts[i].entity; 
+			return this.nearbyEnts[i].entity.pos;
 		}
 	}
 	return null;

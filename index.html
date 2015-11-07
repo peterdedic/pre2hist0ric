@@ -10,6 +10,9 @@
 			height: 20px;
 		}
 		
+		.row {
+			clear: left;
+		}
 		.col {
 			float: left;
 			margin-right: 10px;
@@ -17,7 +20,7 @@
 		
 		.debugPanel {
 			font-family: "Consolas";
-			font-size: 12px;
+			font-size: 10px;
 			overflow-y: scroll;
 			overflow-x: hidden;
 			height: 300px;
@@ -31,14 +34,19 @@
 </head>
 
 <body onload="main()">
-	<div class="col">
-		<div id="statusBar"></div>
-		<canvas id="c" class="col" width="600" height="300"></canvas>
-		<div class="col">
-			<div id="entitiesList" class="debugPanel"></div>
+	<div>
+		<div id="statusBar" class="row">
+			<div id="cursorCoord" class="col"></div>
+			<div class="col"><button onclick="tick(16);">tick</button></div>
 		</div>
-		<div class="col">
-			<pre id="debug" class="debugPanel"></pre>
+		<div class="row">
+			<canvas id="c" class="col" width="600" height="300"></canvas>
+			<div class="col">
+				<div id="entitiesList" class="debugPanel"></div>
+			</div>
+			<div class="col">
+				<pre id="debug" class="debugPanel"></pre>
+			</div>
 		</div>
 	</div>
 	
@@ -52,7 +60,7 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	_cursor_loc[0] = e.offsetX;
 	_cursor_loc[1] = e.offsetY;
 	
-	document.getElementById("statusBar").innerHTML = _cursor_loc;
+	document.getElementById("cursorCoord").innerHTML = _cursor_loc;
 });
 
 var _debug_panel = document.getElementById("debug");
@@ -65,14 +73,26 @@ function _setDebugMsg(text, source) {
 }
 setInterval(function(){
 	if (_env){
+		var htmlEl = document.getElementById("entitiesList");
+		htmlEl.innerHTML = "";
 		for(var i=0; i<_env.entities.length; i++){
 			var et = _env.entities[i];
-			var htmlEl = document.getElementById(et.name);
-			if (htmlEl != null && et.type == "crit")
-				htmlEl.innerHTML = et.name + ": " + et.SM.currState.name + ": " + et.energy.toPrecision(2);
-			
+			var t = "<div>";
+			t += et.name;
+			t += " {" + et.type + "}";
+			if (et.type == "crit") {
+				t += " [" + et.SM.currState.name + "]";
+				t += ": " + et.energy.toPrecision(2);
+				t += ": " + et.speed.toPrecision(2);
+			}
+			t += "</div>";
+			htmlEl.innerHTML += t;
 		}
-		
+		var ar = _env.entities[0].nearbyEnts;
+		_setDebugMsg(_env.entities[0].canSee("food"));
+		for(var i=0; i<ar.length; i++){
+			_setDebugMsg(ar[i].entity.name);
+		}
 		
 	}
 	
@@ -92,13 +112,6 @@ function main() {
 	_env = new Environment();
 	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
 	
-	for (var i = 0; i < 1; i++){
-		_env.add(new Resource({
-			name: "food" + i,
-			type: "food",
-			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
-		}));
-	}
 	
 	for (var i = 0; i < 1; i++){
 		var newCrit = new Crit({
@@ -111,6 +124,15 @@ function main() {
 		_env.add(newCrit);
 	}
 	
+	for (var i = 0; i < 5; i++){
+		_env.add(new Resource({
+			name: "food" + i,
+			type: "food",
+			units: 10,
+			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
+		}));
+	}
+	
 	// var e1,e2;
 	// e1 = _env.getEntityByName("crit0"); 
 	// e1.status = "WANDER";
@@ -119,12 +141,7 @@ function main() {
 	// e2.status = "PURSUIT";
 	// e2.target = e1;
 	
-	var entList = document.getElementById("entitiesList");
-	for (var i = 0; i < _env.entities.length; i++){
-		var et = _env.entities[i];
-		entList.innerHTML += "<div " + "id=\"" + et.name + "\">"+et.name+"</div>" ;
-		et.htmlEl = document.getElementById(et.name);
-	}
+	
 	
 	loop();
 }
@@ -165,7 +182,7 @@ var Resource = function(args){
 	this.type = args.type || "default";
 	this.isActive = true;
 	this.pos = args.pos || [0, 0];
-	this.units = 2;
+	this.units = args.units || 2;
 	
 	this.draw = function(ctx) {
 		ctx.strokeStyle = "rgb(0,190,0)";
@@ -346,6 +363,18 @@ function vec2IsZero(v) {
 function vec2ToString(v) {
 	var p = 3
 	return "["+v[0].toPrecision(p)+","+v[1].toPrecision(p)+"]";
+}
+
+function vec2draw(ctx, v, o) {
+	o = o || [50, 50];
+	var g=ctx.createLinearGradient(o[0], o[1], o[0] + v[0], o[1] + v[1]);
+	g.addColorStop("0","rgba(0,0,255,0.4)");
+	g.addColorStop("1.0","rgba(255,0,0,0.1)");
+	ctx.strokeStyle = g;
+	ctx.beginPath();
+	ctx.moveTo(o[0], o[1]);
+	ctx.lineTo(o[0] + v[0], o[1] + v[1]);
+	ctx.stroke();
 }
 
 function getRand() {
