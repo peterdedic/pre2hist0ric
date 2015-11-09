@@ -16,7 +16,7 @@ var StateMngr = function(entity) {
 	}
 	
 	this.update = function(deltaTime) {
-		this.currState.execute(this.entity);
+		this.currState.execute(this.entity, deltaTime);
 	}
 }
 
@@ -31,7 +31,7 @@ states.Test = function() {
 		entity.stop();
 	}
 	this.execute = function(entity) {
-		entity.steer.seek(_cursor_loc);
+		entity.steer.arrival(_cursor_loc);
 	}
 	this.exit = function(entity) {
 	}
@@ -43,14 +43,14 @@ states.Eat = function() {
 	
 	this.enter = function(entity) {
 	}
-	this.execute = function(entity) {
+	this.execute = function(entity, deltaTime) {
 		if (!entity.canEat())
 			if (entity.isHungry())
 				this.sm.changeState(new states.SearchForFood());
 			else
 				this.sm.changeState(new states.Idle());
 				
-		this.entity.consume();
+		entity.eat(deltaTime);
 	}
 	this.exit = function() {
 	}
@@ -68,7 +68,7 @@ states.SearchForFood = function() {
 			if (entity.canTouch(location))
 				this.sm.changeState(new states.Eat());
 			else
-				this.sm.changeState(new states.GoTo(location, new states.Eating()));
+				this.sm.changeState(new states.GoTo(location, new states.Eat()));
 		}
 		
 		entity.steer.wander();
@@ -85,7 +85,7 @@ states.GoTo = function(vDest, nextState) {
 	this.enter = function() {
 	}
 	this.execute = function(entity) {
-		if (entity.canReach(vDest)) {
+		if (entity.canTouch(vDest)) {
 			entity.stop();
 			this.sm.changeState(nextState);
 		}
