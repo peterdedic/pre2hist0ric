@@ -25,15 +25,15 @@ Steer.prototype.evade = function(e) {
 Steer.prototype.apply = function() {
 	var vSteerSum = [0, 0];
 	for (var i=0; i<this.unitSteerVectors.length; i++) {
-		vSteerSum = vec2addv(vSteerSum, this.unitSteerVectors[i]);
+		vSteerSum = v2.addv(vSteerSum, this.unitSteerVectors[i]);
 	}
-	if (vec2IsZero(vSteerSum)) {
+	if (v2.IsZero(vSteerSum)) {
 		return null;
 	}
-	vSteerSum = vec2muls(vSteerSum, this.entity.maxSpeed);
-	var vRes = vec2norm(vec2subv(vSteerSum, this.entity.vel)); 	// get direction desired velocity
-	vRes = vec2muls(vRes, this.entity.maxAcc);					// set max acceleration
-	this.entity.vel = vec2addv(this.entity.vel, vRes);
+	vSteerSum = v2.muls(vSteerSum, this.entity.maxSpeed);
+	var vRes = v2.norm(v2.subv(vSteerSum, this.entity.vel)); 	// get direction desired velocity
+	vRes = v2.muls(vRes, this.entity.maxAcc);					// set max acceleration
+	this.entity.vel = v2.addv(this.entity.vel, vRes);
 	
 	this.unitSteerVectors = [];
 }
@@ -41,17 +41,17 @@ Steer.prototype.apply = function() {
 
 // ----- S T A T I C   M E T H O D S -----
 Steer.seek = function(entity, vTarget) {
-	return vec2norm(vec2subv(vTarget, entity.pos));	
+	return v2.norm(v2.subv(vTarget, entity.pos));	
 }
 Steer.flee = function(entity, vTarget) {
-	return vec2norm(vec2subv(entity.pos, vTarget));;
+	return v2.norm(v2.subv(entity.pos, vTarget));;
 }
 Steer.arrival = function(entity, vTarget) {
 	var RADIUS = 30;
 	var v = Steer.seek(entity, vTarget);
-	var d = vec2dist(entity.pos, vTarget);
+	var d = v2.dist(entity.pos, vTarget);
 	if (d <= RADIUS) { 						// Begin slowing down if within threshold
-		v = vec2muls(v, d / RADIUS);
+		v = v2.muls(v, d / RADIUS);
 	}
 	return v;
 }
@@ -63,29 +63,29 @@ Steer.wander = function(entity) {
 	var DISPLACEMENT = 50;
 	var WANDER_RADIUS = 10;
 	var cv = [Math.cos(entity.wa), Math.sin(entity.wa)];
-	cv = vec2muls(cv, WANDER_RADIUS);
+	cv = v2.muls(cv, WANDER_RADIUS);
 	
 	
-	//_setDebugMsg(vec2ToString(entity.dir), "cc");
-	var cc = vec2muls(vec2norm(entity.dir), DISPLACEMENT);
-	var vDisp = vec2addv(cv, cc);
+	//_setDebugMsg(v2.ToString(entity.dir), "cc");
+	var cc = v2.muls(v2.norm(entity.dir), DISPLACEMENT);
+	var vDisp = v2.addv(cv, cc);
 	
 	entity.wa += getRandf(-1, 1) * 0.5;
 	
-	return vec2norm(vDisp); 
+	return v2.norm(vDisp); 
 }
 
 Steer.pursuit = function(entity, eTarget) {
 	var T = 3; 
 	// TODO: Implement better future position prediction 
-	var futurePos = vec2addv(eTarget.pos, vec2muls(eTarget.vel, T));
+	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget.vel, T));
 	
 	return Steer.seek(entity, futurePos);
 }
 
 Steer.evade = function(entity, eTarget) {
 	var T = 3;
-	var futurePos = vec2addv(eTarget.pos, vec2muls(eTarget.vel, T));
+	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget.vel, T));
 	
 	return Steer.flee(entity, futurePos);
 }

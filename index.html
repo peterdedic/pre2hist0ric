@@ -50,6 +50,8 @@
 		</div>
 	</div>
 	
+	<script type="text/javascript" src="js/v2.js"></script>
+	<script type="text/javascript" src="js/environment.js"></script>
 	<script type="text/javascript" src="js/steerMngr.js"></script>
 	<script type="text/javascript" src="js/stateMngr.js"></script>
 	<script type="text/javascript" src="js/crit.js"></script>
@@ -133,16 +135,6 @@ function main() {
 		}));
 	}
 	
-	// var e1,e2;
-	// e1 = _env.getEntityByName("crit0"); 
-	// e1.status = "WANDER";
-	// e1.maxSpeed = 13;
-	// e2 = _env.getEntityByName("crit1");
-	// e2.status = "PURSUIT";
-	// e2.target = e1;
-	
-	
-	
 	loop();
 }
 
@@ -168,14 +160,6 @@ function loop(currTime) {
 // ---------------------------------------
 //			C L A S S E S
 // ---------------------------------------
-
-function test(){
-	_env.draw(_ctx);
-	_env.entities[0].findFood();
-	_env.draw(_ctx);
-}
-
-
 
 var Resource = function(args){
 	this.name = args.name || "res"
@@ -203,179 +187,9 @@ var Resource = function(args){
 	}
 }
 
-var Environment = function() {
-	this.entities = [];
-	var minX, minY, maxX, maxY;
-	
-	this.setBounds = function(bounds) {
-		minX = bounds[0];
-		minY = bounds[1];
-		maxX = bounds[2];
-		maxY = bounds[3];
-	}
-	
-	this.add = function(entity) {
-		var bAdded = false;
-		for (var i = 0; i < this.entities.length; i++) {
-			if (!this.entities[i].isActive) {
-				this.entities[i] = entity;
-				bAdded = true;
-			}
-		}
-		if (!bAdded){
-			this.entities.push(entity);
-		}
-	}
-		
-	this.update = function (deltaTime) {
-		for (var i = 0; i < this.entities.length; i++) {
-			var et = this.entities[i];
-			if (et.isActive && et.update) {
-				et.update(deltaTime);
-				wrapAround(et);
-			}
-		}
-	}
-	
-	this.draw = function (context) {
-		for (var i = 0; i < this.entities.length; i++) {
-			if (this.entities[i].isActive)
-				this.entities[i].draw(context);
-		}
-	}
-	
-	this.getEntityByName = function(name) {
-		for (var i=0; i<this.entities.length; i++) { 
-			if (this.entities[i].name == name){ 
-				return this.entities[i];
-			}
-		}
-		return null;
-	}
-	
-	this.getNearbyEntities = function(pos, range) {
-		var eList = [];
-		for (var i=0; i<this.entities.length; i++){
-			var ent = this.entities[i];
-			var d = vec2dist(pos, ent.pos);
-			if (ent.isActive && d <= range) {
-				eList.push({
-					entity: ent, 
-					distance: d
-				});
-			}
-		}
-		return eList;
-	}
-	
-	this.findClosestEntity = function(pos, etype){
-		var target = null,
-		minDist = 999999;
-		for (var i=0; i<this.entities.length; i++){
-			var ent = this.entities[i];
-			if (ent.type == etype && ent.isActive){
-				var dist = vec2dist(pos, ent.pos);
-				
-				if (dist < minDist){
-					target = ent;
-					minDist = dist;
-				}
-			}
-		}
-		
-		return target;
-	}
-	
-	function wrapAround(entity){
-		var x = entity.pos[0],
-		y = entity.pos[1];
-		if (x > maxX)
-			x = minX;
-		if (x < minX)
-			x = maxX;
-		if (y > maxY)
-			y = minY;
-		if (y < minY)
-			y = maxY;
-			
-		entity.pos[0] = x;
-		entity.pos[1] = y;
-	}
-}
 
-// ---------------------------------------
-//				U T I L S
-// ---------------------------------------
-/**
- * adds two vector2 
- * 
- * @param {number} a the first operand
- * @param {number} b the second operand
- * @returns {number} out
-*/
-function vec2addv(a, b) {
-	return [ a[0] + b[0], a[1] + b[1] ];
-};
-function vec2subv(a, b) {
-	return [ a[0] - b[0], a[1] - b[1] ];
-};
-function vec2muls(v, s) {
-	return [ v[0] * s, v[1] * s ];
-};
-function vec2mulv(a, b) {
-	return [ a[0] * b[0], a[1] * b[1] ];
-};
-function vec2divs(v, s) {
-	return [ v[0] / s, v[1] / s ];
-};
-function vec2divv(a, b) {
-	return [ a[0] / b[0], a[1] / b[1] ];
-};
-function vec2trunc(v, smax) {
-	if (vec2len(v) > smax) {
-		v = vec2norm(v);
-		v = vec2muls(v, smax);
-	}
-};
-function vec2norm(v) {
-	var x = v[0],
-		y = v[1];
-	var len = x*x + y*y;
-	if (len > 0) {
-		len = 1 / Math.sqrt(len);
-		x = x * len;
-		y = y * len;
-	}
-	return [x, y];
-};
-function vec2len(v){
-	var x = v[0],
-		y = v[1];
-	return Math.sqrt(x*x + y*y);
-}
-function vec2dist(a, b){
-	return vec2len(vec2subv(b, a));
-}
-function vec2IsZero(v) {
-	return ((v[0] === 0) && (v[1] === 1));
-}
 
-function vec2ToString(v) {
-	var p = 3
-	return "["+v[0].toPrecision(p)+","+v[1].toPrecision(p)+"]";
-}
 
-function vec2draw(ctx, v, o) {
-	o = o || [50, 50];
-	var g=ctx.createLinearGradient(o[0], o[1], o[0] + v[0], o[1] + v[1]);
-	g.addColorStop("0","rgba(0,0,255,0.4)");
-	g.addColorStop("1.0","rgba(255,0,0,0.1)");
-	ctx.strokeStyle = g;
-	ctx.beginPath();
-	ctx.moveTo(o[0], o[1]);
-	ctx.lineTo(o[0] + v[0], o[1] + v[1]);
-	ctx.stroke();
-}
 
 function getRand() {
   return Math.random();

@@ -4,7 +4,7 @@ var Crit = function (args) {
 	this.isActive = true;
 	this.pos = args.pos || [0, 0];
 	this.env = args.env;
-	this.dir = vec2norm(args.dir || [1, 0]);
+	this.dir = v2.norm(args.dir || [1, 0]);
 	this.speed = 0;
 	this.maxSpeed = args.maxSpeed || 10;
 	this.maxAcc = args.maxAcc || 0.1;
@@ -23,8 +23,8 @@ var Crit = function (args) {
 };
 
 Crit.prototype.draw = function(ctx) {
-	//var b = vec2addv(this.pos, this.dir, 10));
-	var b = vec2addv(this.pos, this.vel);
+	//var b = v2.addv(this.pos, this.dir, 10));
+	var b = v2.addv(this.pos, this.vel);
 	ctx.strokeStyle = "#000000";
 	ctx.beginPath();
 	ctx.moveTo(this.pos[0], this.pos[1]);
@@ -60,11 +60,11 @@ Crit.prototype.update = function(deltaTime) {
 	
 	this.steer.apply();
 	// --------- APPLY VELOCITY ---------
-	this.dir = vec2norm(this.vel);
-	this.speed = vec2len(this.vel);
+	this.dir = v2.norm(this.vel);
+	this.speed = v2.len(this.vel);
 	this.speed = Math.min(this.speed, this.maxSpeed);				// truncate speed to max
-	this.vel = vec2muls(this.dir, this.speed);
-	this.pos = vec2addv(this.pos, vec2divs(this.vel, deltaTime));
+	this.vel = v2.muls(this.dir, this.speed);
+	this.pos = v2.addv(this.pos, v2.divs(this.vel, deltaTime));
 	
 	this.energy -= 0.05 / deltaTime;
 };
@@ -77,7 +77,7 @@ Crit.prototype.canSee = function(sResourceType) {
 	return false;
 };
 Crit.prototype.canTouch = function(v) {
-	return (vec2dist(this.pos, v) <= this._TOUCH_RANGE);
+	return (v2.dist(this.pos, v) <= this._TOUCH_RANGE);
 };
 Crit.prototype.canEat = function() {
 	for(var i=0; i<this.nearbyEnts.length; i++){
