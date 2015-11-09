@@ -9,7 +9,6 @@ var Crit = function (args) {
 	this.maxSpeed = args.maxSpeed || 10;
 	this.maxAcc = args.maxAcc || 0.1;
 	this.vel = [0, 0];
-	this.stamina = 10;
 	this.energy = 10;
 	this.steer = new Steer(this);
 	this.SM = new StateMngr(this);
