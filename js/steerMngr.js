@@ -1,3 +1,8 @@
+// ---------------------------------------
+//			S T E E R
+//			M A N A G E R
+// ---------------------------------------
+
 var Steer = function(entity) {
 	this.entity = entity;
 	this.unitSteerVectors = [];
@@ -30,9 +35,9 @@ Steer.prototype.apply = function() {
 	if (v2.IsZero(vSteerSum)) {
 		return null;
 	}
-	vSteerSum = v2.muls(vSteerSum, this.entity.maxSpeed);
+	vSteerSum = v2.muls(vSteerSum, this.entity._maxSpeed);
 	var vRes = v2.norm(v2.subv(vSteerSum, this.entity.vel)); 	// get direction desired velocity
-	vRes = v2.muls(vRes, this.entity.maxAcc);					// set max acceleration
+	vRes = v2.muls(vRes, this.entity._maxAcc);					// set max acceleration
 	this.entity.vel = v2.addv(this.entity.vel, vRes);
 	
 	this.unitSteerVectors = [];

@@ -1,3 +1,7 @@
+// ---------------------------------------
+//			E N V I R O N M E N T
+// ---------------------------------------
+
 var Environment = function() {
 	this.entities = [];
 	var minX, minY, maxX, maxY;
@@ -52,7 +56,7 @@ var Environment = function() {
 		var eList = [];
 		for (var i=0; i<this.entities.length; i++){
 			var ent = this.entities[i];
-			var d = vec2dist(pos, ent.pos);
+			var d = v2.dist(pos, ent.pos);
 			if (ent.isActive && d <= range) {
 				eList.push({
 					entity: ent, 
@@ -69,7 +73,7 @@ var Environment = function() {
 		for (var i=0; i<this.entities.length; i++){
 			var ent = this.entities[i];
 			if (ent.type == etype && ent.isActive){
-				var dist = vec2dist(pos, ent.pos);
+				var dist = v2.dist(pos, ent.pos);
 				
 				if (dist < minDist){
 					target = ent;

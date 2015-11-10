@@ -58,6 +58,7 @@
 	<script type="text/javascript">
 
 var _cursor_loc = [0, 0];
+// register onmouse event that sets global variable containing mouse cursor location
 document.getElementById("c").addEventListener("mousemove", function(e){
 	_cursor_loc[0] = e.offsetX;
 	_cursor_loc[1] = e.offsetY;
@@ -65,6 +66,7 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	document.getElementById("cursorCoord").innerHTML = _cursor_loc;
 });
 
+// get html element which serves as area where all the debug text is getting dumped periodically  
 var _debug_panel = document.getElementById("debug");
 var _debugMsg = "";
 function _setDebugMsg(text, source) {
@@ -73,34 +75,25 @@ function _setDebugMsg(text, source) {
 	}
 	_debugMsg += text + "\n";
 }
-setInterval(function(){
-	if (_env){
-		var htmlEl = document.getElementById("entitiesList");
-		htmlEl.innerHTML = "";
-		for(var i=0; i<_env.entities.length; i++){
-			var et = _env.entities[i];
-			var t = "<div>";
-			t += et.name;
-			t += " {" + et.type + "}";
-			if (et.type == "crit") {
-				t += " [" + et.SM.currState.name + "]";
-				t += ": " + et.energy.toPrecision(2);
-				t += ": " + et.speed.toPrecision(2);
-			}
-			t += "</div>";
-			htmlEl.innerHTML += t;
+
+// dumps all entities in environment to given html element as text;
+function listEntities(id) {
+	var htmlEl = document.getElementById(id);
+	htmlEl.innerHTML = "";
+	_env.entities.forEach(function(ent){
+		var t = "<div>";
+		t += ent.name;
+		t += " {" + ent.type + "}";
+		if (ent.type == "crit") {
+			t += " [" + ent.SM.currState.name + "]";
+			t += " {s:" + ent._stamina.toFixed(1) + "}";
+			t += " {e:" + ent._energy.toFixed(1) + "}";
+			t += " {d:" + ent._stomachLevel.toFixed(1) + "}";
 		}
-		var ar = _env.entities[0].nearbyEnts;
-		_setDebugMsg(_env.entities[0].canSee("food"));
-		for(var i=0; i<ar.length; i++){
-			_setDebugMsg(ar[i].entity.name);
-		}
-		
-	}
-	
-	_debug_panel.innerHTML = _debugMsg;
-	_debugMsg = "";
-}, 250);
+		t += "</div>";
+		htmlEl.innerHTML += t;
+	});
+}
 
 // ---------------------------------------
 //				M A I N
@@ -114,7 +107,6 @@ function main() {
 	_env = new Environment();
 	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
 	
-	
 	for (var i = 0; i < 1; i++){
 		var newCrit = new Crit({
 			name: "crit" + i,
@@ -126,7 +118,7 @@ function main() {
 		_env.add(newCrit);
 	}
 	
-	for (var i = 0; i < 5; i++){
+	for (var i = 0; i < 15; i++){
 		_env.add(new Resource({
 			name: "food" + i,
 			type: "food",
@@ -145,17 +137,28 @@ function tick(delta) {
 	_env.draw(_ctx);
 }
 
-var _deltaTime = 0;
 function loop(currTime) {
 	if (currTime){
-		_deltaTime = currTime - _prevTime;
+		var deltaTime = currTime - _prevTime;
 		_prevTime = currTime;
 		
-		_deltaTime = Math.floor(_deltaTime);
-		tick(_deltaTime);
+		_deltaTime = Math.floor(deltaTime);
+		tick(deltaTime);
 	}
 	requestAnimationFrame(loop);
 }
+
+setInterval(function(){
+	if (_env){
+		listEntities("entitiesList");
+		_env.entities[0].nearbyEnts.forEach(function(ent){
+			_setDebugMsg(ent.entity.name);
+		});
+	}
+	
+	_debug_panel.innerHTML = _debugMsg;
+	_debugMsg = "";
+}, 250);
 
 // ---------------------------------------
 //			C L A S S E S
@@ -189,7 +192,9 @@ var Resource = function(args){
 
 
 
-
+// ---------------------------------------
+//				U T I L S
+// ---------------------------------------
 
 function getRand() {
   return Math.random();

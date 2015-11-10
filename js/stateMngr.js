@@ -1,10 +1,13 @@
+// ---------------------------------------
+//			S T A T E
+//			M A N A G E R
+// ---------------------------------------
+
 var StateMngr = function(entity) {
 	this.entity = entity;
 	this.currState = null;
 	
 	this.changeState = function(newState) {
-		//console.log(entity);
-		
 		if (this.currState !== null) {
 			this.currState.exit(this.entity);
 		}
@@ -31,28 +34,29 @@ states.Test = function() {
 		entity.stop();
 	}
 	this.execute = function(entity) {
-		entity.steer.arrival(_cursor_loc);
+		entity.steer.wander(_cursor_loc);
 	}
 	this.exit = function(entity) {
 	}
 }
 
-states.Eat = function() {
+states.Eat = function(food) {
 	this.name = "Eating";
 	this.sm = null;				// reference to State Manager
 	
 	this.enter = function(entity) {
 	}
 	this.execute = function(entity, deltaTime) {
-		if (!entity.canEat())
+		if (!entity.canEat(food))
 			if (entity.isHungry())
 				this.sm.changeState(new states.SearchForFood());
 			else
 				this.sm.changeState(new states.Idle());
 				
-		entity.eat(deltaTime);
+		entity.eat(food, deltaTime);
 	}
-	this.exit = function() {
+	this.exit = function(entity) {
+		//entity.clearTarget();
 	}
 }
 
@@ -63,12 +67,12 @@ states.SearchForFood = function() {
 	this.enter = function() {
 	}
 	this.execute = function(entity) {
-		if (entity.canSee("food")) {
-			var location = entity.pickFoodSource();
-			if (entity.canTouch(location))
-				this.sm.changeState(new states.Eat());
+		var food = entity.canSee("food");
+		if (food) {
+			if (entity.canTouch(food.pos))
+				this.sm.changeState(new states.Eat(food));
 			else
-				this.sm.changeState(new states.GoTo(location, new states.Eat()));
+				this.sm.changeState(new states.GoTo(food.pos, new states.Eat(food)));
 		}
 		
 		entity.steer.wander();
