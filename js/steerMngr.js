@@ -26,6 +26,9 @@ Steer.prototype.pursuit = function(e) {
 Steer.prototype.evade = function(e) {
 	this.unitSteerVectors.push(Steer.evade(this.entity, e));
 }
+Steer.prototype.stayInBounds = function() {
+	this.unitSteerVectors.push(Steer.stayInBounds(this.entity));
+}
 
 Steer.prototype.apply = function() {
 	var vSteerSum = [0, 0];
@@ -93,4 +96,8 @@ Steer.evade = function(entity, eTarget) {
 	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget.vel, T));
 	
 	return Steer.flee(entity, futurePos);
+}
+
+Steer.stayInBounds = function(entity) {
+	return [0, 1];
 }

@@ -30,52 +30,41 @@ var Crit = function (args) {
 	this._HUNGER_THRESHOLD = 2;
 	this._METABOLISM_RATE = 0.01;
 	
-	this._tracks = [];
+	this._tracks = new WrapArray(10);
 	this._timer = 0;
 	this.nearbyEnts = [];
-	//this.target = null;
 };
 
 Crit.prototype.draw = function(ctx) {
-	//var b = v2.addv(this.pos, this.dir, 10));
-	var b = v2.addv(this.pos, this.vel);
-	ctx.strokeStyle = "#000000";
+	// ------ DRAW TRACKS --------------
+	ctx.strokeStyle = "rgb(0,200,255)";
 	ctx.beginPath();
 	ctx.moveTo(this.pos[0], this.pos[1]);
-	ctx.lineTo(b[0], b[1]);
+	var t = this._tracks;
+	this._tracks.forEach(function(vp){
+			ctx.lineTo(vp[0], vp[1]);
+	}, true);
 	ctx.stroke();
+	
+	//v2.draw(ctx, this.dir, this.pos)
+	v2.draw(ctx, this.vel, this.pos)
 	
 	ctx.strokeStyle = "#ff0000";
 	ctx.beginPath();
 	ctx.arc(this.pos[0], this.pos[1], 1, 0, 2*Math.PI);
 	ctx.stroke();
 	
-	// if (this.target !== null){
-	// 	v2.draw(ctx, this.pos, this.target.pos);
-	// }
+	v2.draw(ctx, v2.muls(this.dir, this._SEE_RANGE), this.pos);
 	
-	// ------ DRAW TRACKS --------------
-	if (this._tracks.length > 0) {
-		var vp = this._tracks[0];
-		ctx.strokeStyle = "rgb(0,200,255)";
-		ctx.beginPath();
-		ctx.moveTo(vp[0], vp[1]);
-		for (var i=1; i<this._tracks.length; i++) {
-			vp = this._tracks[i];
-			ctx.lineTo(vp[0], vp[1]);
-		}
-		ctx.lineTo(this.pos[0], this.pos[1]);
-		ctx.stroke();
-	}
 };
 
 Crit.prototype.update = function(deltaTime) {
-	_debug_panel.innerHTML = "" + this._timer + "\n";// + this._tracks.join("\n") + "\n";
+	_debug_panel.innerHTML = "" + this._timer + "\n";
 	this.nearbyEnts = this.env.getNearbyEntities(this.pos, this._SEE_RANGE);
 	
-	// ------ TRACKS --------------------
+	// ------ LOG TRACKS ----------------
 	if (this._timer >= 30) {
-		this._tracks.push(this.pos);
+		this._tracks.add(this.pos);
 		this._timer = 0;
 	}
 	this._timer++;

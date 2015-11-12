@@ -51,6 +51,8 @@
 	</div>
 	
 	<script type="text/javascript" src="js/v2.js"></script>
+	<script type="text/javascript" src="js/wrapArray.js"></script>
+	<script type="text/javascript" src="js/wall2.js"></script>
 	<script type="text/javascript" src="js/environment.js"></script>
 	<script type="text/javascript" src="js/steerMngr.js"></script>
 	<script type="text/javascript" src="js/stateMngr.js"></script>
@@ -63,7 +65,17 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	_cursor_loc[0] = e.offsetX;
 	_cursor_loc[1] = e.offsetY;
 	
-	document.getElementById("cursorCoord").innerHTML = _cursor_loc;
+	var tb = document.getElementById("cursorCoord");
+	tb.innerHTML = _cursor_loc;
+	
+	var wallPos = test_wall.getPos();
+	var wallN = test_wall.getN();
+	var vCur = v2.subv(_cursor_loc, wallPos);
+	//v2.draw(_ctx, vCur, wallPos);
+	
+	tb.innerHTML += " | "
+	tb.innerHTML += v2.dot(wallN, v2.norm(vCur)).toFixed(2);
+	
 });
 
 // get html element which serves as area where all the debug text is getting dumped periodically  
@@ -126,6 +138,8 @@ function main() {
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
 		}));
 	}
+	
+	//Wall2.test(_ctx);
 	
 	loop();
 }
@@ -206,6 +220,19 @@ function getRandi(min, max) {
 
 function getRandf(min, max) {
   return getRand() * (max - min) + min;
+}
+
+function degToRad(degrees) {
+	return degrees * Math.PI / 180;
+}
+
+function drawLine(ctx, v1, v2, color) {
+	var c = color || "black";
+	ctx.strokeStyle = c;
+	ctx.beginPath();
+	ctx.moveTo(v1[0], v1[1])
+	ctx.lineTo(v2[0], v2[1])
+	ctx.stroke();
 }
 	</script>
 </body>
