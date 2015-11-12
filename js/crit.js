@@ -8,12 +8,15 @@ var Crit = function (args) {
 	this.isActive = true;
 	this.env = args.env;
 	this.pos = args.pos || [0, 0];
+	this.size = args.size || 5;
+	this._color = "black";
+	this._hasCollided = false;
 	
-	this.dir = v2.norm(args.dir || [1, 0]);
+	this._dir = v2.norm(args.dir || [1, 0]);
 	this._speed = 0;
 	this._maxSpeed = args.maxSpeed || 10;
 	this._maxAcc = args.maxAcc || 0.1;
-	this.vel = [0, 0];
+	this._vel = [0, 0];
 	
 	this._stamina = 5;
 	this._maxStamina = 5;
@@ -37,30 +40,41 @@ var Crit = function (args) {
 
 Crit.prototype.draw = function(ctx) {
 	// ------ DRAW TRACKS --------------
-	ctx.strokeStyle = "rgb(0,200,255)";
+	// ctx.strokeStyle = "brown";
+	// ctx.beginPath();
+	// ctx.moveTo(this.pos[0], this.pos[1]);
+	// var t = this._tracks;
+	// this._tracks.forEach(function(vp){
+	// 		ctx.lineTo(vp[0], vp[1]);
+	// }, true);
+	// ctx.stroke();
+	
+	var color = this._hasCollided ? "red" : this._color;
+	
+	// ------ DRAW BODY ----------------
+	var o = v2.addv(this.pos, v2.muls(this._dir, this.size));
+	v2.draw(ctx, v2.muls(this._dir, this.size+5), o, color);
+	// v2.draw(ctx, this._vel, this.pos, color);
+	
+	ctx.strokeStyle = color;
 	ctx.beginPath();
-	ctx.moveTo(this.pos[0], this.pos[1]);
-	var t = this._tracks;
-	this._tracks.forEach(function(vp){
-			ctx.lineTo(vp[0], vp[1]);
-	}, true);
+	ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2*Math.PI);
 	ctx.stroke();
 	
-	//v2.draw(ctx, this.dir, this.pos)
-	v2.draw(ctx, this.vel, this.pos)
-	
-	ctx.strokeStyle = "#ff0000";
+	// ------ DRAW VIEW AREA ----------
+	ctx.fillStyle = "rgba(0,0,0,0.1)";
 	ctx.beginPath();
-	ctx.arc(this.pos[0], this.pos[1], 1, 0, 2*Math.PI);
-	ctx.stroke();
+	ctx.arc(this.pos[0], this.pos[1], this._SEE_RANGE, 0, 2*Math.PI);
+	ctx.fill();
 	
-	v2.draw(ctx, v2.muls(this.dir, this._SEE_RANGE), this.pos);
+	// ------ DRAW VIEW DIR ----------
+	//v2.draw(ctx, v2.muls(this._dir, this._SEE_RANGE), this.pos);
 	
 };
 
 Crit.prototype.update = function(deltaTime) {
-	_debug_panel.innerHTML = "" + this._timer + "\n";
-	this.nearbyEnts = this.env.getNearbyEntities(this.pos, this._SEE_RANGE);
+	this.nearbyEnts = this.env.getNearbyEntities(this, this._SEE_RANGE);
+	this._hasCollided = false;
 	
 	// ------ LOG TRACKS ----------------
 	if (this._timer >= 30) {
@@ -71,38 +85,29 @@ Crit.prototype.update = function(deltaTime) {
 			
 	// ------ S T E E R I N G -----------
 	this.SM.update(deltaTime);
-	
 	this.steer.apply();
 	
 	// --------- APPLY VELOCITY ---------
-	this.dir = v2.norm(this.vel);
-	this._speed = v2.len(this.vel);
+	this._dir = v2.norm(this._vel);
+	this._speed = v2.len(this._vel);
 	
 	this._speed = Math.min(this._speed, this._maxSpeed);				// truncate speed to max
 	
-	this.vel = v2.muls(this.dir, this._speed);
-	this.pos = v2.addv(this.pos, v2.divs(this.vel, deltaTime));
+	this._vel = v2.muls(this._dir, this._speed);
+	this.pos = v2.addv(this.pos, v2.divs(this._vel, deltaTime));
 	
-	// --------- APPLY BODY -------------
-	this.bodyUpdate(deltaTime);
+	// --------- UPDATE BODY ------------
 	
 	// --------- DEBUG ------------------
-	_debug_panel.innerHTML += "\n---------\n";
+	_debug.addMsg("---------");
+	var entname = this.name;
 	this.nearbyEnts.forEach(function(item){
-		_debug_panel.innerHTML += item.entity.name + " {"+item.entity.type+"} " + "[" + item.distance.toFixed(2) + "]\n";
+		_debug.addMsg(entname," ", item.entity.name, "[" + item.distance.toFixed(2) + "]");
 	});
 };
 
-// Crit.prototype.pickFoodSource = function() {
-// 	for(var i=0; i<this.nearbyEnts.length; i++){
-// 		if (this.nearbyEnts[i].entity.type === "food") {
-// 			this.target = this.nearbyEnts[i].entity; 
-// 			return this.nearbyEnts[i].entity.pos;
-// 		}
-// 	}
-// 	return null;
-// };
 
+// ---------------- PROTOTYPES ---------------------
 Crit.prototype.canSee = function(sResourceType) {
 	for(var i=0; i<this.nearbyEnts.length; i++){
 		if (this.nearbyEnts[i].entity.type === sResourceType)
@@ -136,7 +141,6 @@ Crit.prototype.digest = function(dt) {
 	//d = Math.min(this._maxEnergy - this._energy, d);
 	this._stomachLevel -= d;
 	this._energy += d;
-	_debug_panel.innerHTML += "digest: " + d.toFixed(2) + "\n";
 };
 
 Crit.prototype.drainStamina = function(dt) {
@@ -146,7 +150,6 @@ Crit.prototype.drainStamina = function(dt) {
 	var d = movement_r * mpdt;
 	
 	this._stamina -= Math.min(this._stamina, d);
-	_debug_panel.innerHTML += "drain: " + (d*dt).toFixed(2) + "\n";
 };
 
 Crit.prototype.recoverStamina = function(dt) {
@@ -155,7 +158,6 @@ Crit.prototype.recoverStamina = function(dt) {
 	d = Math.min(this._maxStamina - this._stamina, d);
 	this._energy -= d;
 	this._stamina += d;
-	_debug_panel.innerHTML += "recover: " + d.toFixed(2) + "\n";
 };
 
 Crit.prototype.bodyUpdate = function(dt) {
@@ -164,17 +166,14 @@ Crit.prototype.bodyUpdate = function(dt) {
 	this.recoverStamina(dt);
 }
 
-
-// Crit.prototype.clearTarget = function() {
-// 	this.target = null;
-// };
 Crit.prototype.stop = function() {
 	//this._stamina += this.target.drain(0.01);
-	this.vel = [0, 0];
+	this._vel = [0, 0];
 };
 Crit.prototype.getSpeed = function() {
 	return this._maxSpeed;
 };
-// Crit.prototype.getTarget = function() {
-// 	return this.target;
-// };
+Crit.prototype.collided = function (e) {
+	this._hasCollided = true;
+	this.pos = v2.addv(this.pos, v2.muls(e.normal, e.overlap));
+}

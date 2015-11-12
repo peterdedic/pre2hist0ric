@@ -39,9 +39,9 @@ Steer.prototype.apply = function() {
 		return null;
 	}
 	vSteerSum = v2.muls(vSteerSum, this.entity._maxSpeed);
-	var vRes = v2.norm(v2.subv(vSteerSum, this.entity.vel)); 	// get direction desired velocity
+	var vRes = v2.norm(v2.subv(vSteerSum, this.entity._vel)); 	// get direction desired velocity
 	vRes = v2.muls(vRes, this.entity._maxAcc);					// set max acceleration
-	this.entity.vel = v2.addv(this.entity.vel, vRes);
+	this.entity._vel = v2.addv(this.entity._vel, vRes);
 	
 	this.unitSteerVectors = [];
 }
@@ -74,8 +74,8 @@ Steer.wander = function(entity) {
 	cv = v2.muls(cv, WANDER_RADIUS);
 	
 	
-	//_setDebugMsg(v2.ToString(entity.dir), "cc");
-	var cc = v2.muls(v2.norm(entity.dir), DISPLACEMENT);
+	//_setDebugMsg(v2.ToString(entity._dir), "cc");
+	var cc = v2.muls(v2.norm(entity._dir), DISPLACEMENT);
 	var vDisp = v2.addv(cv, cc);
 	
 	entity.wa += getRandf(-1, 1) * 0.5;
@@ -86,14 +86,14 @@ Steer.wander = function(entity) {
 Steer.pursuit = function(entity, eTarget) {
 	var T = 3; 
 	// TODO: Implement better future position prediction 
-	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget.vel, T));
+	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget._vel, T));
 	
 	return Steer.seek(entity, futurePos);
 }
 
 Steer.evade = function(entity, eTarget) {
 	var T = 3;
-	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget.vel, T));
+	var futurePos = v2.addv(eTarget.pos, v2.muls(eTarget._vel, T));
 	
 	return Steer.flee(entity, futurePos);
 }

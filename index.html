@@ -68,25 +68,33 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	var tb = document.getElementById("cursorCoord");
 	tb.innerHTML = _cursor_loc;
 	
-	var wallPos = test_wall.getPos();
-	var wallN = test_wall.getN();
-	var vCur = v2.subv(_cursor_loc, wallPos);
-	//v2.draw(_ctx, vCur, wallPos);
-	
 	tb.innerHTML += " | "
-	tb.innerHTML += v2.dot(wallN, v2.norm(vCur)).toFixed(2);
 	
 });
-
 // get html element which serves as area where all the debug text is getting dumped periodically  
-var _debug_panel = document.getElementById("debug");
-var _debugMsg = "";
-function _setDebugMsg(text, source) {
-	if (source){
-		_debugMsg += source + ": ";
+var _debug = function() {}
+_debug._on = true;
+_debug._text = "";
+_debug.w = document.getElementById("debug");
+_debug.clear = function() {
+	this._text = "";
+};
+_debug.addMsg = function() {
+	if (this._on) {
+		for (var i=0; i<arguments.length; i++){
+			this._text += arguments[i];
+		}
+		this._text += "\n";
 	}
-	_debugMsg += text + "\n";
+};
+_debug.print = function() {
+	this.w.innerHTML = this._text;
 }
+_debug.drawLine = function(p1, p2) {
+	if (this._on) {
+		drawLine(_ctx, p1, p2);
+	}
+};
 
 // dumps all entities in environment to given html element as text;
 function listEntities(id) {
@@ -119,25 +127,27 @@ function main() {
 	_env = new Environment();
 	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
 	
-	for (var i = 0; i < 1; i++){
+	for (var i = 0; i < 20; i++){
+		_env.add(new Resource({
+			name: "food" + i,
+			type: "food",
+			size: getRandi(10, 15),
+			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
+		}));
+	}
+	
+	for (var i = 0; i < 10; i++){
 		var newCrit = new Crit({
 			name: "crit" + i,
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
 			dir: [getRandf(-1, 1), getRandf(-1, 1)],
+			size: getRandi(3, 5),
 			env: _env
 		});
 		
 		_env.add(newCrit);
 	}
 	
-	for (var i = 0; i < 15; i++){
-		_env.add(new Resource({
-			name: "food" + i,
-			type: "food",
-			units: 10,
-			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
-		}));
-	}
 	
 	//Wall2.test(_ctx);
 	
@@ -146,9 +156,12 @@ function main() {
 
 function tick(delta) {
 	_ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
-	_env.update(delta);
+	_debug.clear();
+	_debug.addMsg(delta.toFixed(2));
 		
+	_env.update(delta);	
 	_env.draw(_ctx);
+	_debug.print();
 }
 
 function loop(currTime) {
@@ -162,17 +175,17 @@ function loop(currTime) {
 	requestAnimationFrame(loop);
 }
 
-setInterval(function(){
-	if (_env){
-		listEntities("entitiesList");
-		_env.entities[0].nearbyEnts.forEach(function(ent){
-			_setDebugMsg(ent.entity.name);
-		});
-	}
+// setInterval(function(){
+// 	if (_env){
+// 		listEntities("entitiesList");
+// 		_env.entities[0].nearbyEnts.forEach(function(ent){
+// 			_setDebugMsg(ent.entity.name);
+// 		});
+// 	}
 	
-	_debug_panel.innerHTML = _debugMsg;
-	_debugMsg = "";
-}, 250);
+// 	_debug_panel.innerHTML = _debugMsg;
+// 	_debugMsg = "";
+// }, 250);
 
 // ---------------------------------------
 //			C L A S S E S
@@ -183,24 +196,37 @@ var Resource = function(args){
 	this.type = args.type || "default";
 	this.isActive = true;
 	this.pos = args.pos || [0, 0];
-	this.units = args.units || 2;
+	this.size = args.size || 5;
+	this._color = "rgb(0,190,0)";
+	this._hasCollided = false;
+	this.nearbyEnts = [];
 	
 	this.draw = function(ctx) {
-		ctx.strokeStyle = "rgb(0,190,0)";
+		ctx.strokeStyle = this._hasCollided ? "rgb(255,0,0)" : this._color;
+		// ctx.strokeStyle = this._color;
+		// ctx.shadowColor = "#000000";
+		// ctx.shadowBlur = 7;
+		// ctx.shadowOffsetX = 0;
+		// ctx.shadowOffsetX = 0;
 		ctx.beginPath();
-		ctx.arc(this.pos[0], this.pos[1], this.units, 0, 2*Math.PI);
+		ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2*Math.PI);
+		// ctx.fill();
 		ctx.stroke();
+		// ctx.shadowBlur = 0;
+		// ctx.shadowOffsetX = 0;
+		// ctx.shadowOffsetX = 0;
+		
 	}
 	this.update = function(deltaTime) {
-		if (this.units <= 0) {
-			this.isActive = false;
-			this.units = 0;
-		}
+		this._hasCollided = false;
 	}
 	this.drain = function(delta) {
 		var amount = Math.min(this.units, delta);
 		this.units -= amount;
 		return amount;
+	}
+	this.collided = function(e) {
+		this._hasCollided = true;
 	}
 }
 

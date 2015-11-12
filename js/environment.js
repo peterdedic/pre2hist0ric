@@ -34,12 +34,40 @@ var Environment = function() {
 				wrapAround(et);
 			}
 		}
+		this.ccColisionDetection();
 	}
 	
 	this.draw = function (context) {
 		for (var i = 0; i < this.entities.length; i++) {
 			if (this.entities[i].isActive)
 				this.entities[i].draw(context);
+		}
+	}
+	
+	this.ccColisionDetection = function() {
+		for (var i=0; i<this.entities.length; i++) {
+			var e1 = this.entities[i];
+			for (var j=0; j < e1.nearbyEnts.length; j++) {
+				var e2 = e1.nearbyEnts[j].entity;
+				
+				_debug.drawLine(e1.pos, e2.pos);
+				
+				var overlap = (e1.size + e2.size) - e1.nearbyEnts[j].distance; 
+				if (overlap > 0) {
+					var surface_normal = v2.norm(v2.subv(e1.pos, e2.pos));
+					_debug.addMsg("collision: ", e1.name, " - ", e2.name);
+					e1.collided({
+							overlap: overlap,
+							normal: surface_normal,
+							entity: e2
+						});
+					e2.collided({
+							overlap: overlap,
+							normal: v2.neg(surface_normal),
+							entity: e1
+						}); 
+				}
+			}
 		}
 	}
 	
@@ -52,12 +80,15 @@ var Environment = function() {
 		return null;
 	}
 	
-	this.getNearbyEntities = function(pos, range) {
+	this.getNearbyEntities = function(entity, range) {
 		var eList = [];
 		for (var i=0; i<this.entities.length; i++){
 			var ent = this.entities[i];
-			var d = v2.dist(pos, ent.pos);
-			if (ent.isActive && d <= range) {
+			if (ent.name === entity.name)
+				continue;
+				
+			var d = v2.dist(entity.pos, ent.pos);
+			if (ent.isActive && d <= range + ent.size) {
 				eList.push({
 					entity: ent, 
 					distance: d

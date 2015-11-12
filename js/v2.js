@@ -47,6 +47,12 @@ v2.len = function(v){
 v2.dist = function(a, b){
 	return v2.len(v2.subv(b, a));
 }
+v2.distToLine = function(P, L){
+	//var vL = v2.subv(L.p1, L.p0);
+	var uL = v2.norm(v2.subv(L.p1, L.p0));
+	var w = v2.subv(P, L.p0);
+	return v2.cross(uL, w);
+}
 v2.IsZero = function(v) {
 	return ((v[0] === 0) && (v[1] === 1));
 }
@@ -56,6 +62,9 @@ v2.neg = function(v) {
 
 v2.dot = function(v1, v2) {
 	return v1[0]*v2[0] + v1[1]*v2[1];
+}
+v2.cross = function(v1, v2) {
+	return v1[0]*v2[1]-v1[1]*v2[0];
 }
 
 v2.rotate = function(v, angle) {
@@ -86,6 +95,7 @@ v2.draw = function(ctx, v, o, c) {
 	ctx.lineTo(e[0], e[1]);
 	ctx.stroke();
 	
+	// --- DRAW ARROWHEAD ---
 	var ARROW_HEAD_ANGLE = 20;
 	var ARROW_HEAD_SIZE = 5;
 	var aa = v2.muls(v2.norm(v2.neg(v)), ARROW_HEAD_SIZE);

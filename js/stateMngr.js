@@ -39,6 +39,20 @@ states.Test = function() {
 	this.exit = function(entity) {
 	}
 }
+states.Test2 = function(ent) {
+	this.name = "Testing";
+	this.sm = null;
+	this.ent = ent;
+	
+	this.enter = function(entity) {
+		entity.stop();
+	}
+	this.execute = function(entity) {
+		entity.steer.pursuit(this.ent);
+	}
+	this.exit = function(entity) {
+	}
+}
 
 states.Eat = function(food) {
 	this.name = "Eating";
