@@ -5,6 +5,7 @@
 var Environment = function() {
 	this.entities = [];
 	var minX, minY, maxX, maxY;
+	this._ENTITY_PROXIMITY_LIMIT = 50;
 	
 	this.setBounds = function(bounds) {
 		minX = bounds[0];
@@ -30,6 +31,7 @@ var Environment = function() {
 		for (var i = 0; i < this.entities.length; i++) {
 			var et = this.entities[i];
 			if (et.isActive && et.update) {
+				et.nearbyEnts = this.getNearbyEntities(et);
 				et.update(deltaTime);
 				wrapAround(et);
 			}
@@ -47,21 +49,25 @@ var Environment = function() {
 	this.ccColisionDetection = function() {
 		for (var i=0; i<this.entities.length; i++) {
 			var e1 = this.entities[i];
+			e1._hasCollided = false;
+			if (!e1.nearbyEnts) {
+				continue;
+			}
 			for (var j=0; j < e1.nearbyEnts.length; j++) {
 				var e2 = e1.nearbyEnts[j].entity;
 				
-				_debug.drawLine(e1.pos, e2.pos);
+				_debug.drawLine(e1.pos, e2.pos, "rgba(255,0,0,0.2)");
 				
 				var overlap = (e1.size + e2.size) - e1.nearbyEnts[j].distance; 
 				if (overlap > 0) {
 					var surface_normal = v2.norm(v2.subv(e1.pos, e2.pos));
-					_debug.addMsg("collision: ", e1.name, " - ", e2.name);
-					e1.collided({
+					// _debug.addMsg("collision: ", e1.name, " - ", e2.name);
+					e1.handleCollision({
 							overlap: overlap,
 							normal: surface_normal,
 							entity: e2
 						});
-					e2.collided({
+					e2.handleCollision({
 							overlap: overlap,
 							normal: v2.neg(surface_normal),
 							entity: e1
@@ -80,15 +86,17 @@ var Environment = function() {
 		return null;
 	}
 	
-	this.getNearbyEntities = function(entity, range) {
+	this.getNearbyEntities = function(entity) {
 		var eList = [];
 		for (var i=0; i<this.entities.length; i++){
 			var ent = this.entities[i];
 			if (ent.name === entity.name)
 				continue;
 				
-			var d = v2.dist(entity.pos, ent.pos);
-			if (ent.isActive && d <= range + ent.size) {
+			var d = entity.getDistToEnt(ent); 
+			
+			if (ent.isActive && d <= this._ENTITY_PROXIMITY_LIMIT + ent.size) {
+				_debug.drawLine(entity.pos, ent.pos, "rgba(255,0,0,0.2)");
 				eList.push({
 					entity: ent, 
 					distance: d
@@ -96,24 +104,6 @@ var Environment = function() {
 			}
 		}
 		return eList;
-	}
-	
-	this.findClosestEntity = function(pos, etype){
-		var target = null,
-		minDist = 999999;
-		for (var i=0; i<this.entities.length; i++){
-			var ent = this.entities[i];
-			if (ent.type == etype && ent.isActive){
-				var dist = v2.dist(pos, ent.pos);
-				
-				if (dist < minDist){
-					target = ent;
-					minDist = dist;
-				}
-			}
-		}
-		
-		return target;
 	}
 	
 	function wrapAround(entity){

@@ -40,17 +40,23 @@ v2.norm = function(v) {
 	return [x, y];
 };
 v2.len = function(v){
+	return Math.sqrt(v2.len2(v));
+}
+v2.len2 = function(v){
 	var x = v[0],
 		y = v[1];
-	return Math.sqrt(x*x + y*y);
+	return x*x + y*y;
 }
 v2.dist = function(a, b){
 	return v2.len(v2.subv(b, a));
 }
+v2.dist2 = function(a, b){
+	return v2.len2(v2.subv(b, a));
+}
 v2.distToLine = function(P, L){
 	//var vL = v2.subv(L.p1, L.p0);
-	var uL = v2.norm(v2.subv(L.p1, L.p0));
-	var w = v2.subv(P, L.p0);
+	var uL = v2.norm(v2.subv(L.getP1(), L.getP0()));
+	var w = v2.subv(P, L.getP0());
 	return v2.cross(uL, w);
 }
 v2.IsZero = function(v) {
@@ -64,7 +70,10 @@ v2.dot = function(v1, v2) {
 	return v1[0]*v2[0] + v1[1]*v2[1];
 }
 v2.cross = function(v1, v2) {
-	return v1[0]*v2[1]-v1[1]*v2[0];
+	return v1[0]*v2[1] - v1[1]*v2[0];
+}
+v2.clone = function(v) {
+	return [v[0], v[1]];
 }
 
 v2.rotate = function(v, angle) {
@@ -77,8 +86,8 @@ v2.rotate = function(v, angle) {
 }
 
 v2.toString = function(v) {
-	var p = 3
-	return "["+v[0].toPrecision(p)+","+v[1].toPrecision(p)+"]";
+	var p = 2
+	return "["+v[0].toFixed(p)+","+v[1].toFixed(p)+"]";
 }
 
 v2.draw = function(ctx, v, o, c) {
@@ -110,10 +119,6 @@ v2.draw = function(ctx, v, o, c) {
 	ctx.lineTo(r2[0], r2[1]);
 	ctx.lineTo(e[0], e[1]);
 	ctx.stroke();
-}
-
-v2.inters2 = function (v1s, v1e, v2s, v2e) {
-	
 }
 
 v2.inters = function (ps1, pe1, ps2, pe2) {

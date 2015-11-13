@@ -4,7 +4,7 @@
 
 var Crit = function (args) {
 	this.name = args.name || "crit";
-	this.type = args.type || "crit";
+	this.type = "crit";
 	this.isActive = true;
 	this.env = args.env;
 	this.pos = args.pos || [0, 0];
@@ -37,6 +37,8 @@ var Crit = function (args) {
 	this._timer = 0;
 	this.nearbyEnts = [];
 };
+
+// ---------------- PROTOTYPES ---------------------
 
 Crit.prototype.draw = function(ctx) {
 	// ------ DRAW TRACKS --------------
@@ -73,8 +75,7 @@ Crit.prototype.draw = function(ctx) {
 };
 
 Crit.prototype.update = function(deltaTime) {
-	this.nearbyEnts = this.env.getNearbyEntities(this, this._SEE_RANGE);
-	this._hasCollided = false;
+	
 	
 	// ------ LOG TRACKS ----------------
 	if (this._timer >= 30) {
@@ -87,11 +88,12 @@ Crit.prototype.update = function(deltaTime) {
 	this.SM.update(deltaTime);
 	this.steer.apply();
 	
+	
 	// --------- APPLY VELOCITY ---------
 	this._dir = v2.norm(this._vel);
 	this._speed = v2.len(this._vel);
 	
-	this._speed = Math.min(this._speed, this._maxSpeed);				// truncate speed to max
+	this._speed = Math.min(this._speed, this.getMaxSpeed());				// truncate speed to max
 	
 	this._vel = v2.muls(this._dir, this._speed);
 	this.pos = v2.addv(this.pos, v2.divs(this._vel, deltaTime));
@@ -106,8 +108,6 @@ Crit.prototype.update = function(deltaTime) {
 	});
 };
 
-
-// ---------------- PROTOTYPES ---------------------
 Crit.prototype.canSee = function(sResourceType) {
 	for(var i=0; i<this.nearbyEnts.length; i++){
 		if (this.nearbyEnts[i].entity.type === sResourceType)
@@ -133,7 +133,6 @@ Crit.prototype.eat = function(food, dt) {
 Crit.prototype.isHungry = function() {
 	return (this._stomachLevel < this._HUNGER_THRESHOLD);
 };
-
 
 Crit.prototype.digest = function(dt) {
 	var mpdt = (this._METABOLISM_RATE / dt);
@@ -170,10 +169,19 @@ Crit.prototype.stop = function() {
 	//this._stamina += this.target.drain(0.01);
 	this._vel = [0, 0];
 };
-Crit.prototype.getSpeed = function() {
+Crit.prototype.getMaxSpeed = function() {
 	return this._maxSpeed;
 };
-Crit.prototype.collided = function (e) {
+
+Crit.prototype.handleCollision = function (e) {
 	this._hasCollided = true;
 	this.pos = v2.addv(this.pos, v2.muls(e.normal, e.overlap));
+}
+Crit.prototype.getDistToEnt = function(ent) {
+	if (ent.pos) {
+		return v2.dist(this.pos, ent.pos);
+	}
+	if (ent.type === "line") {
+		return v2.dist(this.pos, Line2.closestPoint(this.pos, ent));
+	}
 }

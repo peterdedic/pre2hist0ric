@@ -52,7 +52,7 @@
 	
 	<script type="text/javascript" src="js/v2.js"></script>
 	<script type="text/javascript" src="js/wrapArray.js"></script>
-	<script type="text/javascript" src="js/wall2.js"></script>
+	<script type="text/javascript" src="js/line2.js"></script>
 	<script type="text/javascript" src="js/environment.js"></script>
 	<script type="text/javascript" src="js/steerMngr.js"></script>
 	<script type="text/javascript" src="js/stateMngr.js"></script>
@@ -67,34 +67,40 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	
 	var tb = document.getElementById("cursorCoord");
 	tb.innerHTML = _cursor_loc;
-	
-	tb.innerHTML += " | "
-	
+
+
+	// ----------------------------------------	
+	// --- DRAW STUFF FOR TESTING PURPOSES ----
+	// ----------------------------------------	
+	// _ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
+	// _debug.clear();
+	// if (_locations.length > 1){
+	// 	var line = new Line2(_locations[0], _locations[1]);
+		
+		
+	// 	line.draw(_ctx);
+	// 	var p = Line2.closestPoint(_cursor_loc, line);
+		
+	// 	_debug.addMsg("dist: ", distP);
+		
+	// 	drawLine(_ctx, p, _cursor_loc, "green");
+	// }
+	// _debug.print();
 });
-// get html element which serves as area where all the debug text is getting dumped periodically  
-var _debug = function() {}
-_debug._on = true;
-_debug._text = "";
-_debug.w = document.getElementById("debug");
-_debug.clear = function() {
-	this._text = "";
-};
-_debug.addMsg = function() {
-	if (this._on) {
-		for (var i=0; i<arguments.length; i++){
-			this._text += arguments[i];
-		}
-		this._text += "\n";
+
+var _locations = [];
+document.getElementById("c").addEventListener("click", function(e) {
+	_locations.push(v2.clone(_cursor_loc));
+	
+	
+	if (_locations.length === 2) {
+		_env.add(new Line2(_locations.pop(), _locations.pop()));
 	}
-};
-_debug.print = function() {
-	this.w.innerHTML = this._text;
-}
-_debug.drawLine = function(p1, p2) {
-	if (this._on) {
-		drawLine(_ctx, p1, p2);
-	}
-};
+});
+
+
+
+
 
 // dumps all entities in environment to given html element as text;
 function listEntities(id) {
@@ -115,6 +121,8 @@ function listEntities(id) {
 	});
 }
 
+
+
 // ---------------------------------------
 //				M A I N
 // ---------------------------------------
@@ -127,7 +135,7 @@ function main() {
 	_env = new Environment();
 	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
 	
-	for (var i = 0; i < 20; i++){
+	for (var i = 0; i < 10; i++){
 		_env.add(new Resource({
 			name: "food" + i,
 			type: "food",
@@ -136,7 +144,7 @@ function main() {
 		}));
 	}
 	
-	for (var i = 0; i < 10; i++){
+	for (var i = 0; i < 3; i++){
 		var newCrit = new Crit({
 			name: "crit" + i,
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
@@ -148,8 +156,6 @@ function main() {
 		_env.add(newCrit);
 	}
 	
-	
-	//Wall2.test(_ctx);
 	
 	loop();
 }
@@ -175,17 +181,12 @@ function loop(currTime) {
 	requestAnimationFrame(loop);
 }
 
-// setInterval(function(){
-// 	if (_env){
-// 		listEntities("entitiesList");
-// 		_env.entities[0].nearbyEnts.forEach(function(ent){
-// 			_setDebugMsg(ent.entity.name);
-// 		});
-// 	}
+setInterval(function(){
+	if (_env){
+		listEntities("entitiesList");
+	}
 	
-// 	_debug_panel.innerHTML = _debugMsg;
-// 	_debugMsg = "";
-// }, 250);
+}, 250);
 
 // ---------------------------------------
 //			C L A S S E S
@@ -193,7 +194,7 @@ function loop(currTime) {
 
 var Resource = function(args){
 	this.name = args.name || "res"
-	this.type = args.type || "default";
+	this.type = "Resource";
 	this.isActive = true;
 	this.pos = args.pos || [0, 0];
 	this.size = args.size || 5;
@@ -203,30 +204,27 @@ var Resource = function(args){
 	
 	this.draw = function(ctx) {
 		ctx.strokeStyle = this._hasCollided ? "rgb(255,0,0)" : this._color;
-		// ctx.strokeStyle = this._color;
-		// ctx.shadowColor = "#000000";
-		// ctx.shadowBlur = 7;
-		// ctx.shadowOffsetX = 0;
-		// ctx.shadowOffsetX = 0;
 		ctx.beginPath();
 		ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2*Math.PI);
-		// ctx.fill();
 		ctx.stroke();
-		// ctx.shadowBlur = 0;
-		// ctx.shadowOffsetX = 0;
-		// ctx.shadowOffsetX = 0;
-		
 	}
 	this.update = function(deltaTime) {
-		this._hasCollided = false;
 	}
 	this.drain = function(delta) {
 		var amount = Math.min(this.units, delta);
 		this.units -= amount;
 		return amount;
 	}
-	this.collided = function(e) {
+	this.handleCollision = function(e) {
 		this._hasCollided = true;
+	}
+}
+Resource.prototype.getDistToEnt = function(ent) {
+	if (ent.pos) {
+		return v2.dist(this.pos, ent.pos);
+	}
+	if (ent.type === "line") {
+		return v2.dist(this.pos, Line2.closestPoint(this.pos, ent));
 	}
 }
 
@@ -260,6 +258,31 @@ function drawLine(ctx, v1, v2, color) {
 	ctx.lineTo(v2[0], v2[1])
 	ctx.stroke();
 }
+
+// get html element which serves as area where all the debug text is getting dumped periodically  
+var _debug = function() {}
+_debug._on = true;
+_debug._text = "";
+_debug.w = document.getElementById("debug");
+_debug.clear = function() {
+	this._text = "";
+};
+_debug.addMsg = function() {
+	if (this._on) {
+		for (var i=0; i<arguments.length; i++){
+			this._text += arguments[i];
+		}
+		this._text += "\n";
+	}
+};
+_debug.print = function() {
+	this.w.innerHTML = this._text;
+}
+_debug.drawLine = function(p1, p2) {
+	if (this._on) {
+		drawLine(_ctx, p1, p2);
+	}
+};
 	</script>
 </body>
 
