@@ -73,8 +73,6 @@ function SpriteAnimator(img, tileWidth, tileHeight, frameDur)
             currentDisplayTime -= frameDur;
             this.nextTile();
         }
-        _debug.addMsg("[", currentTile, "]" , offsetX, ",",  offsetY);
-        _debug.addMsg("[", currentDisplayTime, "]");
     };
 
     this.draw = function( ctx )

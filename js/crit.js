@@ -8,8 +8,12 @@ var Crit = function (args) {
 	this.type = "crit";
 	this.isActive = true;
 	this.env = args.env;
+
+    this.health = 10;
+    this.damage = 1;
+    this.isDead = false;
 	
-	this.shape = new CircleBody(args);
+	this.shape = new CircleShape(args);
 	this.body = new PhysBody(args);
 };
 
@@ -24,6 +28,9 @@ Crit.prototype.draw = function(ctx) {
 
 Crit.prototype.update = function(deltaTime) {
 
+    if (this.health < 1)
+        this.isActive = false;
+
 	// --------- APPLY VELOCITY ---------
 	this.body.update(deltaTime);
 };
@@ -31,6 +38,15 @@ Crit.prototype.update = function(deltaTime) {
 //Crit.prototype.canTouch = function(v) {
 //	return (v2.dist(this.pos, v) <= this.TOUCH_RANGE);
 //};
+
+Crit.prototype.takeDmg = function(dmgInfo) {
+	this.health -= dmgInfo.amount;
+    this.body.pos = v2.addv(this.body.pos, v2.muls(dmgInfo.dir, 15));
+};
+
+Crit.prototype.attack = function() {
+
+};
 
 Crit.prototype.stop = function() {
 	this.vel = [0, 0];

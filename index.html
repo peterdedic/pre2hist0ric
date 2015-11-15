@@ -52,6 +52,7 @@
 	</div>
 	
 	<script type="text/javascript" src="js/v2.js"></script>
+	<script type="text/javascript" src="js/keyboard.js"></script>
 	<script type="text/javascript" src="js/spriteAnimator.js"></script>
 	<script type="text/javascript" src="js/wrapArray.js"></script>
 	<script type="text/javascript" src="js/line2.js"></script>
@@ -60,6 +61,7 @@
 	<script type="text/javascript" src="js/steerMngr.js"></script>
 	<script type="text/javascript" src="js/stateMngr.js"></script>
 	<script type="text/javascript" src="js/crit.js"></script>
+	<script type="text/javascript" src="js/player.js"></script>
 	<script type="text/javascript">
 
 var _cursor_loc = [0, 0];
@@ -93,12 +95,12 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 
 var _locations = [];
 document.getElementById("c").addEventListener("click", function(e) {
-	_locations.push(v2.clone(_cursor_loc));
-	
-	
-	if (_locations.length === 2) {
-		_env.add(new Line2(_locations.pop(), _locations.pop()));
-	}
+//	_locations.push(v2.clone(_cursor_loc));
+//
+//
+//	if (_locations.length === 2) {
+//		_env.add(new Line2(_locations.pop(), _locations.pop()));
+//	}
 });
 
 
@@ -111,7 +113,7 @@ function listEntities(id) {
 		t += ent.name;
 		t += " {" + ent.type + "}";
 		if (ent.type == "crit") {
-			// t += " [" + ent.SM.currState.name + "]";
+			t += " [" + ent.health + "]";
 		}
 		t += "</div>";
 		htmlEl.innerHTML += t;
@@ -140,13 +142,23 @@ function main() {
 	// 		pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
 	// 	}));
 	// }
+
+    _env.add(new Player({
+			name: "player",
+			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
+			dir: [getRandf(-1, 1), getRandf(-1, 1)],
+			radius: 5,
+            color: "red",
+			env: _env
+		}));
 	
-	for (var i = 0; i < 1; i++){
+	for (var i = 0; i < 5; i++){
 		var newCrit = new Crit({
 			name: "crit" + i,
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
 			dir: [getRandf(-1, 1), getRandf(-1, 1)],
 			radius: getRandi(3, 5),
+            color: "purple",
 			env: _env
 		});
 		
@@ -159,8 +171,8 @@ function main() {
 
 function tick(delta) {
 	_ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
-	_debug.clear();
-	_debug.addMsg(delta.toFixed(2));
+	//_debug.clear();
+//	_debug.addMsg("delta",delta.toFixed(2));
 		
 	_env.update(delta);	
 	_env.draw(_ctx);
@@ -253,21 +265,45 @@ function degToRad(degrees) {
 // get html element which serves as area where all the debug text is getting dumped periodically  
 var _debug = function() {}
 _debug._on = true;
-_debug._text = "";
+_debug.dMsg = [];
 _debug.w = document.getElementById("debug");
 _debug.clear = function() {
-	this._text = "";
+	this.dMsg = [];
 };
 _debug.addMsg = function() {
+//    console.log(arguments);
 	if (this._on) {
-		for (var i=0; i<arguments.length; i++){
-			this._text += arguments[i];
+        var id = arguments[0];
+        var text = "";
+		for (var i=1; i<arguments.length; i++){
+			text += arguments[i];
 		}
-		this._text += "\n";
+
+
+        var msg;
+//		for (var i=0; i<this.dMsg.length; i++){
+//            if (this.dMsg[i].id === id)
+//                msg = this.dMsg[i];
+//        }
+
+        if (msg) {
+            msg.text = text;
+            msg.ts = new Date();
+        }
+        else {
+            this.dMsg.push({id: id, ts: new Date(), text: text});
+            this.dMsg.sort(function(a,b){return a.ts.getTime() - b.ts.getTime();});
+        }
+
 	}
 };
 _debug.print = function() {
-	this.w.innerHTML = this._text;
+    var t = "";
+    for (var i=0; i<this.dMsg.length; i++){
+	    t += "[" + this.dMsg[i].ts.toLocaleTimeString() + "] " + this.dMsg[i].id + ": " + this.dMsg[i].text + "\n";
+    }
+
+    this.w.innerHTML = t;
 }
 _debug.drawLine = function(p1, p2, color) {
 	if (this._on) {

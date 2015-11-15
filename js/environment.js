@@ -4,6 +4,7 @@
 
 var Environment = function() {
 	this.entities = [];
+    this.messages = [];
 	var minX, minY, maxX, maxY;
 	this._ENTITY_PROXIMITY_LIMIT = 50;
 	
@@ -36,46 +37,24 @@ var Environment = function() {
 				wrapAround(et);
 			}
 		}
-		this.ccColisionDetection();
+//		this.resolveMessages();
 	}
 	
 	this.draw = function (context) {
 		for (var i = 0; i < this.entities.length; i++) {
-			if (this.entities[i].isActive)
+            var et = this.entities[i];
+			if (et.isActive && et.draw)
 				this.entities[i].draw(context);
 		}
 	}
-	
-	this.ccColisionDetection = function() {
-		for (var i=0; i<this.entities.length; i++) {
-			var e1 = this.entities[i];
-			e1._hasCollided = false;
-			// if (!e1.nearbyEnts) {
-			// 	continue;
-			// }
-			for (var j=0; j < this.entities.length; j++) {
-				var e2 = this.entities[j];
-				
-				_debug.drawLine(e1.body.pos, e2.body.pos, "rgba(255,0,0,0.2)");
-				
-				// var overlap = (e1.size + e2.size) - e1.entities[j].distance;
-				// if (overlap > 0) {
-				// 	var surface_normal = v2.norm(v2.subv(e1.pos, e2.pos));
-				// 	// _debug.addMsg("collision: ", e1.name, " - ", e2.name);
-				// 	e1.handleCollision({
-				// 			overlap: overlap,
-				// 			normal: surface_normal,
-				// 			entity: e2
-				// 		});
-				// 	e2.handleCollision({
-				// 			overlap: overlap,
-				// 			normal: v2.neg(surface_normal),
-				// 			entity: e1
-				// 		});
-				// }
-			}
-		}
-	}
+
+//    this.addMsg = function(msg) {
+//        this.messages.push(msg);
+//    }
+//
+//	this.resolveMessages = function() {
+//
+//	}
 	
 	this.getEntityByName = function(name) {
 		for (var i=0; i<this.entities.length; i++) { 
@@ -89,16 +68,17 @@ var Environment = function() {
 	this.getNearbyEntities = function(entity) {
 		var eList = [];
 		for (var i=0; i<this.entities.length; i++){
-			var ent = this.entities[i];
-			if (ent.name === entity.name)
+			var e = this.entities[i];
+			if (e.name === entity.name)
 				continue;
 				
-			var d = entity.getDistToEnt(ent); 
+			var d = v2.dist(entity.body.pos, e.body.pos); //entity.getDistToEnt(e);
 			
-			if (ent.isActive && d <= this._ENTITY_PROXIMITY_LIMIT + ent.size) {
-				_debug.drawLine(entity.pos, ent.pos, "rgba(255,0,0,0.2)");
+//            _debug.addMsg("e."+i, d);
+			if (e.isActive && d <= this._ENTITY_PROXIMITY_LIMIT + e.body.size) {
+				//_debug.drawLine(entity.body.pos, e.body.pos, "rgba(255,0,0,0.2)");
 				eList.push({
-					entity: ent, 
+					entity: e,
 					distance: d
 				});
 			}
