@@ -59,8 +59,8 @@ v2.distToLine = function(P, L){
 	var w = v2.subv(P, L.getP0());
 	return v2.cross(uL, w);
 }
-v2.IsZero = function(v) {
-	return ((v[0] === 0) && (v[1] === 1));
+v2.isZero = function(v) {
+	return ((v[0] === 0) && (v[1] === 0));
 }
 v2.neg = function(v) {
 	return [-v[0], -v[1]];

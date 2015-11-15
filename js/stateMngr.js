@@ -39,62 +39,6 @@ states.Test = function() {
 	this.exit = function(entity) {
 	}
 }
-states.Test2 = function(ent) {
-	this.name = "Testing";
-	this.sm = null;
-	this.ent = ent;
-	
-	this.enter = function(entity) {
-		entity.stop();
-	}
-	this.execute = function(entity) {
-		entity.steer.pursuit(this.ent);
-	}
-	this.exit = function(entity) {
-	}
-}
-
-states.Eat = function(food) {
-	this.name = "Eating";
-	this.sm = null;				// reference to State Manager
-	
-	this.enter = function(entity) {
-	}
-	this.execute = function(entity, deltaTime) {
-		if (!entity.canEat(food))
-			if (entity.isHungry())
-				this.sm.changeState(new states.SearchForFood());
-			else
-				this.sm.changeState(new states.Idle());
-				
-		entity.eat(food, deltaTime);
-	}
-	this.exit = function(entity) {
-		//entity.clearTarget();
-	}
-}
-
-states.SearchForFood = function() {
-	this.name = "Searching For Food";
-	this.sm = null;				// reference to State Manager
-	
-	this.enter = function() {
-	}
-	this.execute = function(entity) {
-		var food = entity.canSee("food");
-		if (food) {
-			if (entity.canTouch(food.pos))
-				this.sm.changeState(new states.Eat(food));
-			else
-				this.sm.changeState(new states.GoTo(food.pos, new states.Eat(food)));
-		}
-		
-		entity.steer.wander();
-	}
-	this.exit = function() {
-	}
-}
-
 
 states.GoTo = function(vDest, nextState) {
 	this.name = "Going to";
@@ -122,9 +66,7 @@ states.Idle = function() {
 		entity.stop();
 	}
 	this.execute = function(entity) {
-		if (entity.isHungry()) {
-			this.sm.changeState(new states.SearchForFood());
-		}
+
 	}
 	this.exit = function(entity) {
 	}

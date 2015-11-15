@@ -37,7 +37,8 @@
 	<div>
 		<div id="statusBar" class="row">
 			<div id="cursorCoord" class="col"></div>
-			<div class="col"><button onclick="tick(16);">tick</button></div>
+			<div class="col"><button onclick="fwd(16);">fwd</button></div>
+			<div class="col"><button onclick="bck(16);">bck</button></div>
 		</div>
 		<div class="row">
 			<canvas id="c" class="col" width="600" height="300"></canvas>
@@ -51,8 +52,10 @@
 	</div>
 	
 	<script type="text/javascript" src="js/v2.js"></script>
+	<script type="text/javascript" src="js/spriteAnimator.js"></script>
 	<script type="text/javascript" src="js/wrapArray.js"></script>
 	<script type="text/javascript" src="js/line2.js"></script>
+	<script type="text/javascript" src="js/body.js"></script>
 	<script type="text/javascript" src="js/environment.js"></script>
 	<script type="text/javascript" src="js/steerMngr.js"></script>
 	<script type="text/javascript" src="js/stateMngr.js"></script>
@@ -99,9 +102,6 @@ document.getElementById("c").addEventListener("click", function(e) {
 });
 
 
-
-
-
 // dumps all entities in environment to given html element as text;
 function listEntities(id) {
 	var htmlEl = document.getElementById(id);
@@ -111,10 +111,7 @@ function listEntities(id) {
 		t += ent.name;
 		t += " {" + ent.type + "}";
 		if (ent.type == "crit") {
-			t += " [" + ent.SM.currState.name + "]";
-			t += " {s:" + ent._stamina.toFixed(1) + "}";
-			t += " {e:" + ent._energy.toFixed(1) + "}";
-			t += " {d:" + ent._stomachLevel.toFixed(1) + "}";
+			// t += " [" + ent.SM.currState.name + "]";
 		}
 		t += "</div>";
 		htmlEl.innerHTML += t;
@@ -135,21 +132,21 @@ function main() {
 	_env = new Environment();
 	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
 	
-	for (var i = 0; i < 10; i++){
-		_env.add(new Resource({
-			name: "food" + i,
-			type: "food",
-			size: getRandi(10, 15),
-			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
-		}));
-	}
+	// for (var i = 0; i < 10; i++){
+	// 	_env.add(new Resource({
+	// 		name: "food" + i,
+	// 		type: "food",
+	// 		size: getRandi(10, 15),
+	// 		pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
+	// 	}));
+	// }
 	
-	for (var i = 0; i < 3; i++){
+	for (var i = 0; i < 1; i++){
 		var newCrit = new Crit({
 			name: "crit" + i,
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
 			dir: [getRandf(-1, 1), getRandf(-1, 1)],
-			size: getRandi(3, 5),
+			radius: getRandi(3, 5),
 			env: _env
 		});
 		
@@ -167,6 +164,7 @@ function tick(delta) {
 		
 	_env.update(delta);	
 	_env.draw(_ctx);
+
 	_debug.print();
 }
 
@@ -196,11 +194,13 @@ var Resource = function(args){
 	this.name = args.name || "res"
 	this.type = "Resource";
 	this.isActive = true;
+
 	this.pos = args.pos || [0, 0];
 	this.size = args.size || 5;
 	this._color = "rgb(0,190,0)";
+	// this.nearbyEnts = [];
+
 	this._hasCollided = false;
-	this.nearbyEnts = [];
 	
 	this.draw = function(ctx) {
 		ctx.strokeStyle = this._hasCollided ? "rgb(255,0,0)" : this._color;
@@ -250,15 +250,6 @@ function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
 
-function drawLine(ctx, v1, v2, color) {
-	var c = color || "black";
-	ctx.strokeStyle = c;
-	ctx.beginPath();
-	ctx.moveTo(v1[0], v1[1])
-	ctx.lineTo(v2[0], v2[1])
-	ctx.stroke();
-}
-
 // get html element which serves as area where all the debug text is getting dumped periodically  
 var _debug = function() {}
 _debug._on = true;
@@ -278,9 +269,14 @@ _debug.addMsg = function() {
 _debug.print = function() {
 	this.w.innerHTML = this._text;
 }
-_debug.drawLine = function(p1, p2) {
+_debug.drawLine = function(p1, p2, color) {
 	if (this._on) {
-		drawLine(_ctx, p1, p2);
+		var c = color || "black";
+		_ctx.strokeStyle = c;
+		_ctx.beginPath();
+		_ctx.moveTo(p1[0], p1[1])
+		_ctx.lineTo(p2[0], p2[1])
+		_ctx.stroke();
 	}
 };
 	</script>
