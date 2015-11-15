@@ -31,7 +31,7 @@ var Environment = function() {
 		for (var i = 0; i < this.entities.length; i++) {
 			var et = this.entities[i];
 			if (et.isActive && et.update) {
-				et.nearbyEnts = this.getNearbyEntities(et);
+				// et.nearbyEnts = this.getNearbyEntities(et);
 				et.update(deltaTime);
 				wrapAround(et);
 			}
@@ -50,29 +50,29 @@ var Environment = function() {
 		for (var i=0; i<this.entities.length; i++) {
 			var e1 = this.entities[i];
 			e1._hasCollided = false;
-			if (!e1.nearbyEnts) {
-				continue;
-			}
-			for (var j=0; j < e1.nearbyEnts.length; j++) {
-				var e2 = e1.nearbyEnts[j].entity;
+			// if (!e1.nearbyEnts) {
+			// 	continue;
+			// }
+			for (var j=0; j < this.entities.length; j++) {
+				var e2 = this.entities[j];
 				
-				_debug.drawLine(e1.pos, e2.pos, "rgba(255,0,0,0.2)");
+				_debug.drawLine(e1.body.pos, e2.body.pos, "rgba(255,0,0,0.2)");
 				
-				var overlap = (e1.size + e2.size) - e1.nearbyEnts[j].distance; 
-				if (overlap > 0) {
-					var surface_normal = v2.norm(v2.subv(e1.pos, e2.pos));
-					// _debug.addMsg("collision: ", e1.name, " - ", e2.name);
-					e1.handleCollision({
-							overlap: overlap,
-							normal: surface_normal,
-							entity: e2
-						});
-					e2.handleCollision({
-							overlap: overlap,
-							normal: v2.neg(surface_normal),
-							entity: e1
-						}); 
-				}
+				// var overlap = (e1.size + e2.size) - e1.entities[j].distance;
+				// if (overlap > 0) {
+				// 	var surface_normal = v2.norm(v2.subv(e1.pos, e2.pos));
+				// 	// _debug.addMsg("collision: ", e1.name, " - ", e2.name);
+				// 	e1.handleCollision({
+				// 			overlap: overlap,
+				// 			normal: surface_normal,
+				// 			entity: e2
+				// 		});
+				// 	e2.handleCollision({
+				// 			overlap: overlap,
+				// 			normal: v2.neg(surface_normal),
+				// 			entity: e1
+				// 		});
+				// }
 			}
 		}
 	}
@@ -107,8 +107,8 @@ var Environment = function() {
 	}
 	
 	function wrapAround(entity){
-		var x = entity.pos[0],
-		y = entity.pos[1];
+		var x = entity.body.pos[0],
+		y = entity.body.pos[1];
 		if (x > maxX)
 			x = minX;
 		if (x < minX)
@@ -118,7 +118,7 @@ var Environment = function() {
 		if (y < minY)
 			y = maxY;
 			
-		entity.pos[0] = x;
-		entity.pos[1] = y;
+		entity.body.pos[0] = x;
+		entity.body.pos[1] = y;
 	}
 }
