@@ -53,6 +53,7 @@
 	
 	<script type="text/javascript" src="js/v2.js"></script>
 	<script type="text/javascript" src="js/keyboard.js"></script>
+	<script type="text/javascript" src="js/gamepad.js"></script>
 	<script type="text/javascript" src="js/spriteAnimator.js"></script>
 	<script type="text/javascript" src="js/wrapArray.js"></script>
 	<script type="text/javascript" src="js/line2.js"></script>
@@ -63,6 +64,8 @@
 	<script type="text/javascript" src="js/crit.js"></script>
 	<script type="text/javascript" src="js/player.js"></script>
 	<script type="text/javascript">
+
+
 
 var _cursor_loc = [0, 0];
 // register onmouse event that sets global variable containing mouse cursor location
@@ -148,7 +151,7 @@ function main() {
 			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
 			dir: [getRandf(-1, 1), getRandf(-1, 1)],
 			radius: 5,
-            color: "red",
+            color: "black",
 			env: _env
 		}));
 	
@@ -281,10 +284,10 @@ _debug.addMsg = function() {
 
 
         var msg;
-//		for (var i=0; i<this.dMsg.length; i++){
-//            if (this.dMsg[i].id === id)
-//                msg = this.dMsg[i];
-//        }
+		for (var i=0; i<this.dMsg.length; i++){
+            if (this.dMsg[i].id === id)
+                msg = this.dMsg[i];
+        }
 
         if (msg) {
             msg.text = text;

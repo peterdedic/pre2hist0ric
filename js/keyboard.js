@@ -25,7 +25,7 @@ Keyb.onKeyUp = function(event){
 
 	Keyb.keys[key] = false;
 	//console.log('up', key);
-    event.cancelBubble = true;
+    //event.cancelBubble = true;
 };
 
 Keyb.onKeyDown = function(event){
@@ -38,7 +38,7 @@ Keyb.onKeyDown = function(event){
 	if (Keyb.keys[key] == false){
 		Keyb.keys[key] = true;
 	}
-    event.cancelBubble = true;
+    //event.cancelBubble = true;
 };
 
 document.addEventListener("keydown", Keyb.onKeyDown, false);

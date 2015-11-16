@@ -16,16 +16,14 @@ var Environment = function() {
 	}
 	
 	this.add = function(entity) {
-		var bAdded = false;
 		for (var i = 0; i < this.entities.length; i++) {
 			if (!this.entities[i].isActive) {
 				this.entities[i] = entity;
-				bAdded = true;
+				return;
 			}
 		}
-		if (!bAdded){
-			this.entities.push(entity);
-		}
+
+        this.entities.push(entity);
 	}
 		
 	this.update = function (deltaTime) {

@@ -121,6 +121,28 @@ v2.draw = function(ctx, v, o, c) {
 	ctx.stroke();
 }
 
+v2.perp = function (v) {
+    return [v[1], -v[0]];
+}
+
+v2.closestPointOnLine = function(P, L0, L1) {
+	var v = v2.subv(L1, L0);
+	var w = v2.subv(P, L0);
+
+	var c1 = v2.dot(w, v);
+	if (c1 <= 0 )  // before P0
+		return L0;
+
+	var c2 = v2.dot(v, v);
+	if (c2 <= c1 ) // after P1
+		return L1;
+
+	var b = c1 / c2;
+	var Pb = v2.addv(L0, v2.muls(v, b));
+
+	return Pb;
+}
+
 v2.inters = function (ps1, pe1, ps2, pe2) {
   // Get A,B,C of first line - points : ps1 to pe1
   var A1 = pe1[1]-ps1[1];
