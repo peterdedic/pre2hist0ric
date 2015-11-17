@@ -62,6 +62,7 @@ v2.distToLine = function(P, L){
 v2.isZero = function(v) {
 	return ((v[0] === 0) && (v[1] === 0));
 }
+
 v2.neg = function(v) {
 	return [-v[0], -v[1]];
 }
@@ -125,20 +126,20 @@ v2.perp = function (v) {
     return [v[1], -v[0]];
 }
 
-v2.closestPointOnLine = function(P, L0, L1) {
-	var v = v2.subv(L1, L0);
-	var w = v2.subv(P, L0);
+v2.closestPointOnLine = function(P, A, B) {
+	var a = v2.subv(P, A);
+	var b = v2.subv(B, A);
 
-	var c1 = v2.dot(w, v);
+	var c1 = v2.dot(a, b);
 	if (c1 <= 0 )  // before P0
-		return L0;
+		return A;
 
-	var c2 = v2.dot(v, v);
+	var c2 = v2.dot(b, b); // or squared magnitute of vector v (vx*vx + vy*vy)
 	if (c2 <= c1 ) // after P1
-		return L1;
+		return B;
 
-	var b = c1 / c2;
-	var Pb = v2.addv(L0, v2.muls(v, b));
+	var t = c1 / c2;
+	var Pb = v2.addv(A, v2.muls(b, t));
 
 	return Pb;
 }

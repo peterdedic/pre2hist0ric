@@ -3,11 +3,12 @@
 //			M A N A G E R
 // ---------------------------------------
 
-var StateMngr = function(entity) {
-	this.entity = entity;
+var StateMngr = function (entity) {
+	"use strict";
+    this.entity = entity;
 	this.currState = null;
 	
-	this.changeState = function(newState) {
+	this.changeState = function (newState) {
 		if (this.currState !== null) {
 			this.currState.exit(this.entity);
 		}
@@ -16,28 +17,29 @@ var StateMngr = function(entity) {
 		this.currState.sm = this;
 		this.currState.enter(this.entity);
 		
-	}
+	};
 	
-	this.update = function(deltaTime) {
+	this.update = function (deltaTime) {
 		this.currState.execute(this.entity, deltaTime);
-	}
-}
+	};
+};
 
 
-var states = states || {}
+var states = states || {};
 
-states.Test = function() {
-	this.name = "Testing";
+states.Test = function () {
+	"use strict";
+    this.name = "Testing";
 	this.sm = null;
 	
-	this.enter = function(entity) {
+	this.enter = function (entity) {
 		entity.stop();
-	}
-	this.execute = function(entity) {
+	};
+	this.execute = function (entity) {
 		entity.steer.wander(_cursor_loc);
-	}
-	this.exit = function(entity) {
-	}
+	};
+	this.exit = function (entity) {
+	};
 }
 
 states.GoTo = function(vDest, nextState) {

@@ -52,6 +52,8 @@
 	</div>
 	
 	<script type="text/javascript" src="js/v2.js"></script>
+	<script type="text/javascript" src="js/shapes.js"></script>
+	<script type="text/javascript" src="js/particles.js"></script>
 	<script type="text/javascript" src="js/keyboard.js"></script>
 	<script type="text/javascript" src="js/gamepad.js"></script>
 	<script type="text/javascript" src="js/spriteAnimator.js"></script>
@@ -96,7 +98,8 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	// _debug.print();
 });
 
-var _locations = [];
+var _PE = new ParticleEngine(1000).init();
+//var _locations = [];
 document.getElementById("c").addEventListener("click", function(e) {
 //	_locations.push(v2.clone(_cursor_loc));
 //
@@ -104,6 +107,15 @@ document.getElementById("c").addEventListener("click", function(e) {
 //	if (_locations.length === 2) {
 //		_env.add(new Line2(_locations.pop(), _locations.pop()));
 //	}
+
+    _PE.addParticles((function(){
+        var i = 0,
+            p = [];
+        for (i = 0; i < 50; i += 1) {
+            p.push(new Particle(_cursor_loc, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(0.5, 15), getRandi(500, 3000)));
+        }
+        return p;
+    })());
 });
 
 
@@ -177,8 +189,11 @@ function tick(delta) {
 	//_debug.clear();
 //	_debug.addMsg("delta",delta.toFixed(2));
 		
-	_env.update(delta);	
-	_env.draw(_ctx);
+	//_env.update(delta);
+	//_env.draw(_ctx);
+
+    _PE.update(delta);
+    _PE.draw(_ctx);
 
 	_debug.print();
 }
