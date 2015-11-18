@@ -50,11 +50,78 @@
 			</div>
 		</div>
 	</div>
-	
+
+    <script type="text/javascript">
+
+// ---------------------------------------
+//			C L A S S E S
+// ---------------------------------------
+
+var Game = function () {
+    var _env;
+    var _canvas;
+    var _ctx;
+
+    this.gParticleEngine = {};
+    this.gCursor_loc = [0, 0];
+
+    this.setCanvas = function (elementName) {
+        _canvas = document.getElementById("c");
+        _ctx = _canvas.getContext("2d");
+    }
+
+    this.init = function () {
+        _env = new Environment();
+        _env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
+
+        this.gParticleEngine = new ParticleEngine(1000).init();
+
+        _env.add(new Player({
+                name: "player",
+                pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
+                dir: [getRandf(-1, 1), getRandf(-1, 1)],
+                radius: 5,
+                color: "black",
+                env: _env
+            }));
+
+        for (var i = 0; i < 5; i++){
+            var newCrit = new Crit({
+                name: "crit" + i,
+                pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
+                dir: [getRandf(-1, 1), getRandf(-1, 1)],
+                radius: getRandi(3, 5),
+                color: "purple",
+                env: _env
+            });
+
+            _env.add(newCrit);
+        }
+    }
+
+    this.tick = function (delta) {
+        _ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
+        //_debug.clear();
+    //	_debug.addMsg("delta",delta.toFixed(2));
+
+        _env.update(delta);
+        _env.draw(_ctx);
+
+        this.gParticleEngine.update(delta);
+        this.gParticleEngine.draw(_ctx);
+
+        _debug.print();
+    };
+
+}
+
+    </script>
+
 	<script type="text/javascript" src="js/v2.js"></script>
-	<script type="text/javascript" src="js/shapes.js"></script>
 	<script type="text/javascript" src="js/particles.js"></script>
+	<script type="text/javascript" src="js/shapes.js"></script>
 	<script type="text/javascript" src="js/keyboard.js"></script>
+	<script type="text/javascript" src="js/mouse.js"></script>
 	<script type="text/javascript" src="js/gamepad.js"></script>
 	<script type="text/javascript" src="js/spriteAnimator.js"></script>
 	<script type="text/javascript" src="js/wrapArray.js"></script>
@@ -68,46 +135,37 @@
 	<script type="text/javascript">
 
 
+// ---------------------------------------
+//				M A I N
+// ---------------------------------------
 
-var _cursor_loc = [0, 0];
-// register onmouse event that sets global variable containing mouse cursor location
-document.getElementById("c").addEventListener("mousemove", function(e){
-	_cursor_loc[0] = e.offsetX;
-	_cursor_loc[1] = e.offsetY;
-	
-	var tb = document.getElementById("cursorCoord");
-	tb.innerHTML = _cursor_loc;
+var game = new Game();
+var prevTime = 0;
+
+function main() {
+    game.setCanvas("c");
+	game.init();
+
+    gameLoop();
+}
+
+function gameLoop(currTime) {
+    if (currTime){
+        var deltaTime = currTime - prevTime;
+        prevTime = currTime;
+
+        game.tick(deltaTime);
+    }
+    requestAnimationFrame(gameLoop);
+};
 
 
-	// ----------------------------------------	
-	// --- DRAW STUFF FOR TESTING PURPOSES ----
-	// ----------------------------------------	
-	// _ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
-	// _debug.clear();
-	// if (_locations.length > 1){
-	// 	var line = new Line2(_locations[0], _locations[1]);
-		
-		
-	// 	line.draw(_ctx);
-	// 	var p = Line2.closestPoint(_cursor_loc, line);
-		
-	// 	_debug.addMsg("dist: ", distP);
-		
-	// 	drawLine(_ctx, p, _cursor_loc, "green");
-	// }
-	// _debug.print();
-});
+// ---------------------------------------
+//				DEBUG METHODS
+// ---------------------------------------
 
 document.getElementById("c").addEventListener("click", function(e) {
 
-//    _PE.addParticles((function(){
-//        var i = 0,
-//            p = [];
-//        for (i = 0; i < 50; i += 1) {
-//            p.push(new Particle(_cursor_loc, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
-//        }
-//        return p;
-//    })());
 });
 
 
@@ -127,91 +185,18 @@ function listEntities(id) {
 	});
 }
 
-
-
-// ---------------------------------------
-//				M A I N
-// ---------------------------------------
-var _canvas = document.getElementById("c"); 
-var _ctx = _canvas.getContext("2d");
-var _env;
-var _PE = new ParticleEngine(1000).init();
-var _prevTime = 0;
-	
-function main() {
-	_env = new Environment();
-	_env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
-	
-	// for (var i = 0; i < 10; i++){
-	// 	_env.add(new Resource({
-	// 		name: "food" + i,
-	// 		type: "food",
-	// 		size: getRandi(10, 15),
-	// 		pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)]
-	// 	}));
-	// }
-
-    _env.add(new Player({
-			name: "player",
-			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
-			dir: [getRandf(-1, 1), getRandf(-1, 1)],
-			radius: 5,
-            color: "black",
-			env: _env
-		}));
-	
-	for (var i = 0; i < 5; i++){
-		var newCrit = new Crit({
-			name: "crit" + i,
-			pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
-			dir: [getRandf(-1, 1), getRandf(-1, 1)],
-			radius: getRandi(3, 5),
-            color: "purple",
-			env: _env
-		});
-		
-		_env.add(newCrit);
-	}
-	
-	
-	loop();
-}
-
-function tick(delta) {
-	_ctx.clearRect(0, 0, _canvas.clientWidth, _canvas.clientHeight);
-	//_debug.clear();
-//	_debug.addMsg("delta",delta.toFixed(2));
-		
-	_env.update(delta);
-	_env.draw(_ctx);
-
-    _PE.update(delta);
-    _PE.draw(_ctx);
-
-	_debug.print();
-}
-
-function loop(currTime) {
-	if (currTime){
-		var deltaTime = currTime - _prevTime;
-		_prevTime = currTime;
-		
-		_deltaTime = Math.floor(deltaTime);
-		tick(deltaTime);
-	}
-	requestAnimationFrame(loop);
-}
-
 setInterval(function(){
-	if (_env){
-		listEntities("entitiesList");
-	}
+//	if (_env){
+//		listEntities("entitiesList");
+//	}
 	
 }, 250);
 
-// ---------------------------------------
-//			C L A S S E S
-// ---------------------------------------
+
+
+
+
+
 
 
 

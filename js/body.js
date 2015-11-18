@@ -1,5 +1,8 @@
-var PhysBody = function(args) {
-	this.pos = args.pos || [0, 0];
+var v2 = v2 || {};
+
+var PhysBody = function (args) {
+	"use strict";
+    this.pos = args.pos || [0, 0];
 	// this._speed = 0;
 	// this._maxSpeed = args.maxSpeed || 10;
 	// this._maxAcc = args.maxAcc || 0.1;
@@ -7,11 +10,11 @@ var PhysBody = function(args) {
 	this.vel = [0, 0];
     //console.log(args);
 
-    this.add = function(v) {
+    this.add = function (v) {
         this.vel = v2.addv(this.vel, v);
-    }
+    };
 
-	this.update = function(dt) {
+	this.update = function (dt) {
 		//_debug.addMsg()
 		//this.dir = v2.isZero(this.vel) ? this.dir : v2.norm(this.vel);
 		// this._speed = v2.isZero(this._vel) ? this._speed : v2.len(this._vel);
@@ -21,5 +24,5 @@ var PhysBody = function(args) {
 		// this._vel = v2.muls(this._dir, this._speed);
 		this.pos = v2.addv(this.pos, v2.divs(this.vel, dt));
         this.vel = [0, 0];
-	}
-}
+	};
+};

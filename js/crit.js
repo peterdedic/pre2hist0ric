@@ -1,9 +1,16 @@
 // ---------------------------------------
 //			C R I T T E R
 // ---------------------------------------
+var v2 = v2 || {};
+var shapes = shapes || {};
+var PhysBody = PhysBody || {};
+var gParticleEngine = gParticleEngine || {};
+var Particle = Particle || {};
 
-"use strict;"
+console.log(gParticleEngine);
+
 var Crit = function (args) {
+    "use strict";
 	this.name = args.name || "crit";
 	this.type = "crit";
 	this.isActive = true;
@@ -20,14 +27,14 @@ var Crit = function (args) {
 
 // ---------------- PROTOTYPES ---------------------
 
-Crit.prototype.draw = function(ctx) {
-	
+Crit.prototype.draw = function (ctx) {
+	"use strict";
 	// ------ DRAW BODY ----------------
     shapes.drawCircleArrow(ctx, this.body.pos, this.dir, this.body.size, this.color);
-	
 };
 
-Crit.prototype.update = function(deltaTime) {
+Crit.prototype.update = function (deltaTime) {
+    "use strict";
 
     if (this.health < 1) {
         this.isActive = false;
@@ -38,27 +45,27 @@ Crit.prototype.update = function(deltaTime) {
 	this.body.update(deltaTime);
 };
 
-Crit.prototype.takeDmg = function(dmgInfo) {
+Crit.prototype.takeDmg = function (dmgInfo) {
+    "use strict";
 	this.health -= dmgInfo.amount;
 };
 
-Crit.prototype.attack = function() {
-
+Crit.prototype.attack = function () {
+    "use strict";
 };
 
 Crit.prototype.die = function () {
-    var e = this;
-    _PE.addParticles((function(){
-        var i = 0,
-            p = [];
-        for (i = 0; i < 50; i += 1) {
-            p.push(new Particle(e.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
-        }
-        return p;
-    })());
-}
-
-Crit.prototype.stop = function() {
-	this.vel = [0, 0];
+    "use strict";
+    var i = 0,
+        p = [];
+    for (i = 0; i < 50; i += 1) {
+        p.push(new Particle(this.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
+    }
+    return p;
+    gParticleEngine.addParticles(p);
 };
 
+Crit.prototype.stop = function () {
+    "use strict";
+	this.vel = [0, 0];
+};

@@ -28,7 +28,7 @@ Player.prototype.draw = function(ctx) {
 Player.prototype.update = function(deltaTime) {
     var speed = 10;
 
-    this.dir = v2.norm(v2.subv(_cursor_loc, this.body.pos));
+    this.dir = v2.norm(v2.subv(Mouse.position, this.body.pos));
     var move_fwd = this.dir;
     var move_rigth = v2.perp(this.dir);
     var vMotion = [0, 0];
@@ -75,7 +75,7 @@ Player.prototype.takeDmg = function(dmgInfo) {
 
 Player.prototype.die = function () {
     var e = this;
-    _PE.addParticles((function(){
+    gParticleEngine.addParticles((function(){
         var i = 0,
             p = [];
         for (i = 0; i < 50; i += 1) {
