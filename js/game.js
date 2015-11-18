@@ -3,12 +3,9 @@
 // ---------------------------------------
 
 var Game = function () {
-    var _env;
+    var _env = new Environment();
     var _canvas;
     var _ctx;
-
-    this.gParticleEngine = {};
-    this.gCursor_loc = [0, 0];
 
     this.setCanvas = function (elementName) {
         _canvas = document.getElementById("c");
@@ -16,10 +13,8 @@ var Game = function () {
     }
 
     this.init = function () {
-        _env = new Environment();
         _env.setBounds([0, 0, _canvas.clientWidth, _canvas.clientHeight]);
-
-        this.gParticleEngine = new ParticleEngine(1000).init();
+        _env.init();
 
         _env.add(new Player({
                 name: "player",
@@ -51,9 +46,6 @@ var Game = function () {
 
         _env.update(delta);
         _env.draw(_ctx);
-
-        this.gParticleEngine.update(delta);
-        this.gParticleEngine.draw(_ctx);
 
         _debug.print();
     };

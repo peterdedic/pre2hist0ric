@@ -80,12 +80,7 @@ Player.prototype.takeDmg = function(dmgInfo) {
 };
 
 Player.prototype.die = function () {
-    var i = 0,
-        p = [];
-    for (i = 0; i < 50; i += 1) {
-        p.push(new Particle(this.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
-    }
-    gParticleEngine.addParticles(p);
+    this.env.createExplosion(this.body.pos);
 }
 
 Player.prototype.attack = function() {

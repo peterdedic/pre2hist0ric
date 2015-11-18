@@ -7,8 +7,6 @@ var PhysBody = PhysBody || {};
 var gParticleEngine = gParticleEngine || {};
 var Particle = Particle || {};
 
-console.log(gParticleEngine);
-
 var Crit = function (args) {
     "use strict";
 	this.name = args.name || "crit";
@@ -56,13 +54,7 @@ Crit.prototype.attack = function () {
 
 Crit.prototype.die = function () {
     "use strict";
-    var i = 0,
-        p = [];
-    for (i = 0; i < 50; i += 1) {
-        p.push(new Particle(this.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
-    }
-    return p;
-    gParticleEngine.addParticles(p);
+    this.env.createExplosion(this.body.pos);
 };
 
 Crit.prototype.stop = function () {

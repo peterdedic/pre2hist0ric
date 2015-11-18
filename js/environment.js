@@ -7,6 +7,8 @@ var Environment = function() {
     this.messages = [];
 	var minX, minY, maxX, maxY;
 	this._ENTITY_PROXIMITY_LIMIT = 50;
+
+    var _particleEngine = {};
 	
 	this.setBounds = function(bounds) {
 		minX = bounds[0];
@@ -14,6 +16,10 @@ var Environment = function() {
 		maxX = bounds[2];
 		maxY = bounds[3];
 	}
+
+    this.init = function () {
+        _particleEngine = new ParticleEngine(1000).init();
+    };
 	
 	this.add = function(entity) {
 		for (var i = 0; i < this.entities.length; i++) {
@@ -35,6 +41,8 @@ var Environment = function() {
 				wrapAround(et);
 			}
 		}
+        _particleEngine.update(deltaTime);
+
 //		this.resolveMessages();
 	}
 	
@@ -44,6 +52,8 @@ var Environment = function() {
 			if (et.isActive && et.draw)
 				this.entities[i].draw(context);
 		}
+
+        _particleEngine.draw(context);
 	}
 
 //    this.addMsg = function(msg) {
@@ -83,6 +93,15 @@ var Environment = function() {
 		}
 		return eList;
 	}
+
+    this.createExplosion = function (pos) {
+        var i = 0,
+        p = [];
+        for (i = 0; i < 50; i += 1) {
+            p.push(new Particle(pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
+        }
+        _particleEngine.setParticles(p);
+    }
 	
 	function wrapAround(entity){
 		var x = entity.body.pos[0],

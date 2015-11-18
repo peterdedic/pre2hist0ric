@@ -55,8 +55,7 @@ var ParticleEngine = function (max) {
         }
     };
 
-    this.addParticles = function (p_array) {
-        console.log(p_array);
+    this.setParticles = function (p_array) {
         var i = 0,
             j = 0,
             num = p_array.length;
