@@ -14,7 +14,7 @@ var Crit = function (args) {
     this.isDead = false;
     this.dir = v2.norm(args.dir) || [0, 1];
 	
-	this.shape = new CircleShape(args);
+    this.color = args.color || "black";
 	this.body = new PhysBody(args);
 };
 
@@ -23,14 +23,16 @@ var Crit = function (args) {
 Crit.prototype.draw = function(ctx) {
 	
 	// ------ DRAW BODY ----------------
-	this.shape.draw(ctx, this.body.pos, this.dir);
+    shapes.drawCircleArrow(ctx, this.body.pos, this.dir, this.body.size, this.color);
 	
 };
 
 Crit.prototype.update = function(deltaTime) {
 
-    if (this.health < 1)
+    if (this.health < 1) {
         this.isActive = false;
+        this.die();
+    }
 
 	// --------- APPLY VELOCITY ---------
 	this.body.update(deltaTime);
@@ -38,12 +40,23 @@ Crit.prototype.update = function(deltaTime) {
 
 Crit.prototype.takeDmg = function(dmgInfo) {
 	this.health -= dmgInfo.amount;
-    //this.body.pos = v2.addv(this.body.pos, v2.muls(dmgInfo.dir, 15));
 };
 
 Crit.prototype.attack = function() {
 
 };
+
+Crit.prototype.die = function () {
+    var e = this;
+    _PE.addParticles((function(){
+        var i = 0,
+            p = [];
+        for (i = 0; i < 50; i += 1) {
+            p.push(new Particle(e.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
+        }
+        return p;
+    })());
+}
 
 Crit.prototype.stop = function() {
 	this.vel = [0, 0];

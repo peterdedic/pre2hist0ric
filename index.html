@@ -98,24 +98,16 @@ document.getElementById("c").addEventListener("mousemove", function(e){
 	// _debug.print();
 });
 
-var _PE = new ParticleEngine(1000).init();
-//var _locations = [];
 document.getElementById("c").addEventListener("click", function(e) {
-//	_locations.push(v2.clone(_cursor_loc));
-//
-//
-//	if (_locations.length === 2) {
-//		_env.add(new Line2(_locations.pop(), _locations.pop()));
-//	}
 
-    _PE.addParticles((function(){
-        var i = 0,
-            p = [];
-        for (i = 0; i < 50; i += 1) {
-            p.push(new Particle(_cursor_loc, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(0.5, 15), getRandi(500, 3000)));
-        }
-        return p;
-    })());
+//    _PE.addParticles((function(){
+//        var i = 0,
+//            p = [];
+//        for (i = 0; i < 50; i += 1) {
+//            p.push(new Particle(_cursor_loc, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
+//        }
+//        return p;
+//    })());
 });
 
 
@@ -142,7 +134,8 @@ function listEntities(id) {
 // ---------------------------------------
 var _canvas = document.getElementById("c"); 
 var _ctx = _canvas.getContext("2d");
-var _env; 
+var _env;
+var _PE = new ParticleEngine(1000).init();
 var _prevTime = 0;
 	
 function main() {
@@ -189,8 +182,8 @@ function tick(delta) {
 	//_debug.clear();
 //	_debug.addMsg("delta",delta.toFixed(2));
 		
-	//_env.update(delta);
-	//_env.draw(_ctx);
+	_env.update(delta);
+	_env.draw(_ctx);
 
     _PE.update(delta);
     _PE.draw(_ctx);
@@ -219,44 +212,6 @@ setInterval(function(){
 // ---------------------------------------
 //			C L A S S E S
 // ---------------------------------------
-
-var Resource = function(args){
-	this.name = args.name || "res"
-	this.type = "Resource";
-	this.isActive = true;
-
-	this.pos = args.pos || [0, 0];
-	this.size = args.size || 5;
-	this._color = "rgb(0,190,0)";
-	// this.nearbyEnts = [];
-
-	this._hasCollided = false;
-	
-	this.draw = function(ctx) {
-		ctx.strokeStyle = this._hasCollided ? "rgb(255,0,0)" : this._color;
-		ctx.beginPath();
-		ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2*Math.PI);
-		ctx.stroke();
-	}
-	this.update = function(deltaTime) {
-	}
-	this.drain = function(delta) {
-		var amount = Math.min(this.units, delta);
-		this.units -= amount;
-		return amount;
-	}
-	this.handleCollision = function(e) {
-		this._hasCollided = true;
-	}
-}
-Resource.prototype.getDistToEnt = function(ent) {
-	if (ent.pos) {
-		return v2.dist(this.pos, ent.pos);
-	}
-	if (ent.type === "line") {
-		return v2.dist(this.pos, Line2.closestPoint(this.pos, ent));
-	}
-}
 
 
 

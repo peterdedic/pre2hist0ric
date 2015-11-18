@@ -1,18 +1,3 @@
-var CircleShape = function(args) {
-	this.radius = args.radius || 5;
-	this.color = args.color || "black";
-
-	this.draw = function(ctx, origin, dir) {
-		var o = v2.addv(origin, v2.muls(dir, this.radius));
-		v2.draw(ctx, v2.muls(dir, this.radius + 5), o, this.color);
-
-		ctx.strokeStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(origin[0], origin[1], this.radius, 0, 2*Math.PI);
-		ctx.stroke();
-	}
-}
-
 var PhysBody = function(args) {
 	this.pos = args.pos || [0, 0];
 	// this._speed = 0;
