@@ -50,7 +50,7 @@ var ParticleEngine = function (max) {
             p;
         for (i = 0; i < particles.length; i += 1) {
             if (particles[i].isActive) {
-                shapes.drawSquare(ctx, particles[i].p, 1, particles[i].p);
+                shapes.drawSquare(ctx, particles[i].p, 1, particles[i].c);
             }
         }
     };

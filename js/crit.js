@@ -4,8 +4,6 @@
 var v2 = v2 || {};
 var shapes = shapes || {};
 var PhysBody = PhysBody || {};
-var gParticleEngine = gParticleEngine || {};
-var Particle = Particle || {};
 
 var Crit = function (args) {
     "use strict";
@@ -35,7 +33,6 @@ Crit.prototype.update = function (deltaTime) {
     "use strict";
 
     if (this.health < 1) {
-        this.isActive = false;
         this.die();
     }
 
@@ -54,7 +51,8 @@ Crit.prototype.attack = function () {
 
 Crit.prototype.die = function () {
     "use strict";
-    this.env.createExplosion(this.body.pos);
+    this.env.createExplosion(this);
+    this.isActive = false;
 };
 
 Crit.prototype.stop = function () {

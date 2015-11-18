@@ -94,11 +94,11 @@ var Environment = function() {
 		return eList;
 	}
 
-    this.createExplosion = function (pos) {
+    this.createExplosion = function (entity) {
         var i = 0,
         p = [];
         for (i = 0; i < 50; i += 1) {
-            p.push(new Particle(pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800)));
+            p.push(new Particle(entity.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800), entity.color));
         }
         _particleEngine.setParticles(p);
     }

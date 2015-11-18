@@ -31,7 +31,7 @@ var Game = function () {
                 pos: [getRandi(0, _canvas.clientWidth), getRandi(0, _canvas.clientHeight)],
                 dir: [getRandf(-1, 1), getRandf(-1, 1)],
                 radius: getRandi(3, 5),
-                color: "purple",
+                color: "red",
                 env: _env
             });
 

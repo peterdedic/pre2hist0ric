@@ -31,9 +31,17 @@ Player.prototype.draw = function(ctx) {
 Player.prototype.update = function(deltaTime) {
     this.isAttacking = false;
 
+    if (this.health < 1) {
+        this.die();
+    }
 
-    var move_fwd = this.dir;
-    var move_rigth = v2.perp(this.dir);
+    this.updateControls(deltaTime);
+
+	// --------- APPLY VELOCITY ---------
+	this.body.update(deltaTime);
+};
+
+Player.prototype.updateControls = function (dt) {
     var vMotion = [0, 0];
     var speed = 10;
 
@@ -51,23 +59,28 @@ Player.prototype.update = function(deltaTime) {
         vMotion[0] = Gamepad.g[0].axes[0] * speed;
         vMotion[1] = Gamepad.g[0].axes[1] * speed;
     } else {
-        this.dir = v2.norm(v2.subv(Mouse.position, this.body.pos));
-
-        if (Keyb.keys["up"])
-            vMotion = v2.addv(vMotion, v2.muls(move_fwd, speed));
-        if (Keyb.keys["down"])
-            vMotion = v2.addv(vMotion, v2.muls(move_fwd, -speed));
+        //this.dir = v2.norm(v2.subv(Mouse.position, this.body.pos));
         if (Keyb.keys["left"])
-            vMotion = v2.addv(vMotion, v2.muls(move_rigth, -speed));
+            this.dir = v2.rotate(this.dir, -1);
         if (Keyb.keys["right"])
+            this.dir = v2.rotate(this.dir,  1);
+
+        var move_fwd = this.dir;
+        var move_rigth = v2.perp(this.dir);
+
+        if (Keyb.keys["W"])
+            vMotion = v2.addv(vMotion, v2.muls(move_fwd, speed));
+        if (Keyb.keys["S"])
+            vMotion = v2.addv(vMotion, v2.muls(move_fwd, -speed));
+        if (Keyb.keys["A"])
+            vMotion = v2.addv(vMotion, v2.muls(move_rigth, -speed));
+        if (Keyb.keys["D"])
             vMotion = v2.addv(vMotion, v2.muls(move_rigth, speed));
         if (Keyb.keys["space"])
             this.attack();
     }
 
-	// --------- APPLY VELOCITY ---------
     this.body.add(vMotion);
-	this.body.update(deltaTime);
 };
 
 Player.prototype.stop = function() {
@@ -76,25 +89,26 @@ Player.prototype.stop = function() {
 
 Player.prototype.takeDmg = function(dmgInfo) {
 	this.health =- dmgInfo.amount;
-    this.body.add(v2.neg(dmgInfo.dir));
+    //this.body.add(v2.neg(dmgInfo.dir));
 };
 
 Player.prototype.die = function () {
-    this.env.createExplosion(this.body.pos);
+    this.env.createExplosion(this);
+    this.isActive = false;
 }
 
 Player.prototype.attack = function() {
-    var p = this;
+    var me = this;
 
     this.isAttacking = true;
 
-    this.env.entities.forEach(function(enemy){
-        if (enemy.isActive) {
-            var laserRayEnd = v2.addv(p.body.pos, v2.muls(p.dir, 300));
-            var point = v2.closestPointOnLine(enemy.body.pos, p.body.pos, laserRayEnd );
-            if (v2.dist(enemy.body.pos, point) < enemy.body.size) {
-                _debug.addMsg("attack dmg:", p.damage);
-                enemy.takeDmg({amount: p.damage, dir: p.dir});
+    this.env.entities.forEach(function(entity){
+        if (entity.isActive && entity.name !== me.name) {
+            var laserRayEnd = v2.addv(me.body.pos, v2.muls(me.dir, 300));
+            var point = v2.closestPointOnLine(entity.body.pos, me.body.pos, laserRayEnd );
+            if (v2.dist(entity.body.pos, point) < entity.body.size) {
+//                _debug.addMsg("attack dmg:", me.damage);
+                entity.takeDmg({amount: me.damage, dir: me.dir});
             }
         }
     });
