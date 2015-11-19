@@ -2,7 +2,7 @@
 //			E N V I R O N M E N T
 // ---------------------------------------
 
-var Environment = function() {
+var Environment = function () {
 	this.entities = [];
     this.messages = [];
 	var minX, minY, maxX, maxY;
@@ -66,7 +66,7 @@ var Environment = function() {
 	
 	this.getEntityByName = function(name) {
 		for (var i=0; i<this.entities.length; i++) { 
-			if (this.entities[i].name == name){ 
+			if (this.entities[i].name === name){
 				return this.entities[i];
 			}
 		}
@@ -94,11 +94,47 @@ var Environment = function() {
 		return eList;
 	}
 
+    this.getEntitiesByLine = function (line, sort) {
+        var i = 0,
+            results = [];
+        for (i=0; i<this.entities.length; i++){
+            var entity = this.entities[i];
+            if (entity.isActive) {
+                var t = v2.intersLineCircle(
+                    line,
+                    {center: entity.body.pos, radius: entity.body.size});
+
+                if (t.length > 0) {
+                    results.push({name: entity.name, t: t[0]});
+                }
+            }
+        }
+
+        if (sort) {
+            results.sort(function (a, b) {
+                return a.t - b.t;
+            });
+        }
+
+        return results;
+    }
+
     this.createExplosion = function (entity) {
         var i = 0,
-        p = [];
-        for (i = 0; i < 50; i += 1) {
-            p.push(new Particle(entity.body.pos, [getRandf(-1, 1), getRandf(-1, 1)], getRandf(20, 25), getRandi(500, 800), entity.color));
+            p = [],
+            x, y, angle;
+        for (i = 0; i < 150; i += 1) {
+            angle = Math.random() * Math.PI * 2;
+            x = Math.cos(angle) * entity.body.size;
+            y = Math.sin(angle) * entity.body.size;
+
+            p.push(new Particle(
+                [entity.body.pos[0] + x, entity.body.pos[1] + y],   // position
+                v2.norm([x, y]),                                 // direction of movement
+                getRandf(20, 25),                       // speed
+                getRandi(500, 800),                     // lifespan
+                getRandi(1, 5),
+                entity.color));
         }
         _particleEngine.setParticles(p);
     }

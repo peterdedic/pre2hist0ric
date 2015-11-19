@@ -12,18 +12,33 @@ var Player = function (args) {
     this.isAttacking = false;
     this.health = 10;
     this.damage = 1;
+    this.maxEnergy = 100;
+    this.energy = 100;
     this.dir = v2.norm(args.dir) || [0, 1];
 
     this.color = args.color || "black";
 	this.body = new PhysBody(args);
+
+    this.ctx;
 };
 
 // ---------------- PROTOTYPES ---------------------
 
 Player.prototype.draw = function(ctx) {
+    this.ctx = ctx;
+//    if (this.isAttacking)
+//        _debug.drawLine(ctx, {A: this.body.pos, B: v2.addv(this.body.pos, v2.muls(this.dir, 300))}, "orange");
 
-    if (this.isAttacking)
-        _debug.drawLine(ctx, this.body.pos, v2.addv(this.body.pos, v2.muls(this.dir, 300)), "orange");
+    var x = this.body.pos[0];
+    var y = this.body.pos[1];
+
+    ctx.strokeStyle = "orange";
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.arc(x, y, this.body.size - 2, 0, 2 * (this.energy / this.maxEnergy) * Math.PI);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+
 	// ------ DRAW BODY ----------------
     shapes.drawCircleArrow(ctx, this.body.pos, this.dir, this.body.size, this.color);
 };
@@ -37,13 +52,16 @@ Player.prototype.update = function(deltaTime) {
 
     this.updateControls(deltaTime);
 
+    if (this.energy <= this.maxEnergy)
+        this.energy += 0.25;
+
 	// --------- APPLY VELOCITY ---------
 	this.body.update(deltaTime);
 };
 
 Player.prototype.updateControls = function (dt) {
     var vMotion = [0, 0];
-    var speed = 10;
+    var speed = 0.1;
 
     if (Gamepad.connected) {
         Gamepad.update();
@@ -61,21 +79,15 @@ Player.prototype.updateControls = function (dt) {
     } else {
         //this.dir = v2.norm(v2.subv(Mouse.position, this.body.pos));
         if (Keyb.keys["left"])
-            this.dir = v2.rotate(this.dir, -1);
+            this.dir = v2.rotate(this.dir, -5);
         if (Keyb.keys["right"])
-            this.dir = v2.rotate(this.dir,  1);
+            this.dir = v2.rotate(this.dir,  5);
 
         var move_fwd = this.dir;
         var move_rigth = v2.perp(this.dir);
 
         if (Keyb.keys["W"])
-            vMotion = v2.addv(vMotion, v2.muls(move_fwd, speed));
-        if (Keyb.keys["S"])
-            vMotion = v2.addv(vMotion, v2.muls(move_fwd, -speed));
-        if (Keyb.keys["A"])
-            vMotion = v2.addv(vMotion, v2.muls(move_rigth, -speed));
-        if (Keyb.keys["D"])
-            vMotion = v2.addv(vMotion, v2.muls(move_rigth, speed));
+            vMotion = v2.addv(vMotion, this.move(v2.muls(move_fwd, speed)));
         if (Keyb.keys["space"])
             this.attack();
     }
@@ -84,7 +96,7 @@ Player.prototype.updateControls = function (dt) {
 };
 
 Player.prototype.stop = function() {
-	this.vel = [0, 0];
+	this.body.vel = [0, 0];
 };
 
 Player.prototype.takeDmg = function(dmgInfo) {
@@ -97,19 +109,36 @@ Player.prototype.die = function () {
     this.isActive = false;
 }
 
+Player.prototype.move = function (v) {
+    if (this.energy < 0.5)
+        return [0, 0];
+
+    this.energy -= 0.5;
+    return v;
+}
+
 Player.prototype.attack = function() {
     var me = this;
 
+    if (this.energy < 2.5) {
+        return;
+    }
+
     this.isAttacking = true;
 
-    this.env.entities.forEach(function(entity){
-        if (entity.isActive && entity.name !== me.name) {
-            var laserRayEnd = v2.addv(me.body.pos, v2.muls(me.dir, 300));
-            var point = v2.closestPointOnLine(entity.body.pos, me.body.pos, laserRayEnd );
-            if (v2.dist(entity.body.pos, point) < entity.body.size) {
-//                _debug.addMsg("attack dmg:", me.damage);
-                entity.takeDmg({amount: me.damage, dir: me.dir});
-            }
-        }
-    });
+    var laserLineEnd = v2.addv(me.body.pos, v2.muls(me.dir, 300));
+    var laserVector = {A: me.body.pos, B: laserLineEnd};
+
+    var entsList = this.env.getEntitiesByLine(laserVector, true);
+    _debug.text = entsList.map(function(item) { return item.name + ", " + item.t;}).join("\n");
+
+    if (entsList.length > 1 && entsList[1].t > 0 && entsList[1].t < 1) {
+        this.env.getEntityByName(entsList[1].name).takeDmg({amount: me.damage});
+        laserLineEnd = v2.addv(me.body.pos, v2.muls(v2.subv(laserVector.B, laserVector.A), entsList[1].t));
+    }
+
+    this.energy -= 2.5;
+
+    _debug.drawLine(this.ctx, {A: this.body.pos, B: laserLineEnd}, "orange");
+//    _debug.drawPoint(this.ctx, laserLineEnd, "orange");
 };

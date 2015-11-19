@@ -126,22 +126,62 @@ v2.perp = function (v) {
     return [v[1], -v[0]];
 }
 
-v2.closestPointOnLine = function(P, A, B) {
-	var a = v2.subv(P, A);
-	var b = v2.subv(B, A);
+v2.closestPointOnSegment = function(P, segment) {
+	var a = v2.subv(P, segment.A);
+	var b = v2.subv(segment.B, segment.A);
 
 	var c1 = v2.dot(a, b);
 	if (c1 <= 0 )  // before P0
-		return A;
+		return segment.A;
 
 	var c2 = v2.dot(b, b); // or squared magnitute of vector v (vx*vx + vy*vy)
 	if (c2 <= c1 ) // after P1
-		return B;
+		return segment.B;
 
 	var t = c1 / c2;
-	var Pb = v2.addv(A, v2.muls(b, t));
+	var Pb = v2.addv(segment.A, v2.muls(b, t));
 
 	return Pb;
+}
+
+v2.intersLineCircle = function (line, circle) {
+    var c = {x: circle.center[0], y: circle.center[1]};
+    var r = circle.radius;
+
+    var p1 = {x: line.A[0], y: line.A[1]};
+    var p2 = {x: line.B[0], y: line.B[1]};
+    var dx = p2.x - p1.x;
+    var dy = p2.y - p1.y;
+
+    var A = dx * dx + dy * dy;
+    var B = 2 * (dx * (p1.x - c.x) + dy * (p1.y - c.y));
+    var C = (p1.x - c.x) * (p1.x - c.x) + (p1.y - c.y) * (p1.y - c.y) - r * r;
+
+    var det = B * B - 4 * A * C;
+    if ((A <= 0.0000001) || (det < 0)) {
+        // No real solutions.
+        return [];
+    }
+    else if (det == 0) {
+        // One solution.
+//        t = -B / (2 * A);
+        //return [p1.x + t * dx, p1.y + t * dy];
+        return [-B / (2 * A)];
+    }
+    else
+    {
+        // Two solutions.
+        var h = Math.sqrt(det);
+        var result = [];
+//        t = (-B + h) / (2 * A);
+        //result.push([p1.x + t * dx, p1.y + t * dy]);
+        result.push((-B + h) / (2 * A));
+//        t = (-B - h) / (2 * A);
+        result.push((-B - h) / (2 * A));
+        result.sort();
+        //result.push([p1.x + t * dx, p1.y + t * dy]);
+        return result;
+    }
 }
 
 v2.inters = function (ps1, pe1, ps2, pe2) {
@@ -162,4 +202,20 @@ v2.inters = function (ps1, pe1, ps2, pe2) {
  
   // now return the Vector2 intersection point
   return [(B2*C1 - B1*C2)/delta,(A1*C2 - A2*C1)/delta];
+}
+
+// ---------------------------------------
+//			R A Y
+// ---------------------------------------
+var Vector = function (x, y) {
+    this.x = x;
+    this.y = y;
+}
+Vector.fromArray = function (a) {
+    return new Vector(a[0], a[1]);
+}
+
+var Ray = function (position, direction) {
+    this.p = position;
+    this.d = direction;
 }

@@ -4,6 +4,10 @@
 	<style>
 		canvas {
 			border: 1px solid black;
+/*
+            width: 600px;
+            height: 600px;
+*/
 		}
 		
 		#statusBar {
@@ -37,11 +41,13 @@
 	<div>
 		<div id="statusBar" class="row">
 			<div id="cursorCoord" class="col"></div>
+<!--
 			<div class="col"><button onclick="fwd(16);">fwd</button></div>
 			<div class="col"><button onclick="bck(16);">bck</button></div>
+-->
 		</div>
 		<div class="row">
-			<canvas id="c" class="col" width="600" height="300"></canvas>
+			<canvas id="c" class="col" width="600" height="600"></canvas>
 			<div class="col">
 				<div id="entitiesList" class="debugPanel"></div>
 			</div>
@@ -104,6 +110,37 @@ document.getElementById("c").addEventListener("click", function(e) {
 
 });
 
+//var gCanvas = document.getElementById("c");
+//var gCtx = gCanvas.getContext("2d");
+//var gScreenCenter = [gCanvas.clientWidth / 2, gCanvas.clientHeight / 2];
+//var gCircle = {
+//    center: [
+//        getRandi(100, gCanvas.clientWidth  - 100),
+//        getRandi(100, gCanvas.clientHeight - 100)
+//        ],
+//    radius: getRandi(50, 100)
+//}
+//document.getElementById("c").addEventListener("mousemove", function(e) {
+//    gCtx.clearRect(0, 0, gCanvas.clientWidth, gCanvas.clientHeight);
+//
+//
+//    var line = {A: gScreenCenter, B: [e.offsetX, e.offsetY]};
+////    _debug.drawLine(gCtx, line, "black");
+//    _debug.drawCircle(gCtx, gCircle, "red");
+//
+//    var cPoint = v2.closestPointOnSegment(gCircle.center, line);
+//    var intersections = v2.segmentCircleIntersetion(line, gCircle);
+//    var AB = v2.subv(line.B, line.A);
+//    _debug.addMsg("result", intersections.join(","));
+//    intersections.forEach(function (p) {
+//        v2.draw(gCtx, v2.muls(AB, p), line.A, "black");
+//        _debug.drawPoint(gCtx, p, "red");
+//    });
+//
+//    _debug.drawPoint(gCtx, cPoint, "green");
+//    _debug.print();
+//});
+
 
 // dumps all entities in environment to given html element as text;
 function listEntities(id) {
@@ -156,13 +193,16 @@ function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
 
+var _ctx = document.getElementById("c").getContext("2d");
 // get html element which serves as area where all the debug text is getting dumped periodically  
 var _debug = function() {}
 _debug._on = true;
 _debug.dMsg = [];
+_debug.text = "";
 _debug.w = document.getElementById("debug");
 _debug.clear = function() {
 	this.dMsg = [];
+    this.w.innerHTML = "";
 };
 _debug.addMsg = function() {
 //    console.log(arguments);
@@ -170,7 +210,7 @@ _debug.addMsg = function() {
         var id = arguments[0];
         var text = "";
 		for (var i=1; i<arguments.length; i++){
-			text += arguments[i];
+			text += arguments[i] + ",";
 		}
 
 
@@ -194,19 +234,45 @@ _debug.addMsg = function() {
 _debug.print = function() {
     var t = "";
     for (var i=0; i<this.dMsg.length; i++){
-	    t += "[" + this.dMsg[i].ts.toLocaleTimeString() + "] " + this.dMsg[i].id + ": " + this.dMsg[i].text + "\n";
+//        t += "[" + this.dMsg[i].ts.toLocaleTimeString() + "] ";
+	    t += this.dMsg[i].id + ": " + this.dMsg[i].text + "\n";
     }
 
     this.w.innerHTML = t;
+    this.w.innerHTML += this.text;
 }
-_debug.drawLine = function(ctx, p1, p2, color) {
+_debug.drawLine = function(ctx, line, color) {
 	if (this._on) {
 		var c = color || "black";
 		ctx.strokeStyle = c;
 		ctx.beginPath();
-		ctx.moveTo(p1[0], p1[1])
-		ctx.lineTo(p2[0], p2[1])
+		ctx.moveTo(line.A[0], line.A[1]);
+		ctx.lineTo(line.B[0], line.B[1]);
 		ctx.stroke();
+	}
+};
+_debug.drawPoint = function(ctx, point, color) {
+	if (this._on) {
+		var c = color || "black";
+		ctx.strokeStyle = c;
+		ctx.beginPath();
+		ctx.moveTo(point[0] - 3, point[1] - 3);
+		ctx.lineTo(point[0] + 3, point[1] + 3);
+        ctx.moveTo(point[0] + 3, point[1] - 3);
+		ctx.lineTo(point[0] - 3, point[1] + 3);
+		ctx.stroke();
+	}
+};
+_debug.drawCircle = function(ctx, circle, color) {
+    "use strict";
+	if (this._on) {
+        var c = color || "black";
+        ctx.strokeStyle = c;
+        ctx.beginPath();
+        ctx.arc(circle.center[0], circle.center[1], circle.radius, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        _debug.drawPoint(ctx, circle.center, c);
 	}
 };
 	</script>

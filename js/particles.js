@@ -1,12 +1,17 @@
 var v2 = v2 || {};
 var shapes = shapes || {};
 
-var Particle = function (pos, vel, speed, lifeSpan, c) {
+// ---------------------------------------
+//			P A R T I C L E
+// ---------------------------------------
+
+var Particle = function (pos, dir, speed, lifeSpan, s, c) {
     "use strict";
 
     this.p = pos;
-    this.v = v2.muls(v2.norm(vel), speed);
+    this.v = v2.muls(v2.norm(dir), speed);
     this.c = c || "black";
+    this.s = s || 1;
     this.isActive = true;
     this.age = 0;
 
@@ -20,6 +25,12 @@ var Particle = function (pos, vel, speed, lifeSpan, c) {
         this.age += dt;
     };
 };
+
+
+// ---------------------------------------
+//			P A R T I C L E
+//			E N G I N E
+// ---------------------------------------
 
 var ParticleEngine = function (max) {
     "use strict";
@@ -49,8 +60,9 @@ var ParticleEngine = function (max) {
         var i = 0,
             p;
         for (i = 0; i < particles.length; i += 1) {
-            if (particles[i].isActive) {
-                shapes.drawSquare(ctx, particles[i].p, 1, particles[i].c);
+            p = particles[i];
+            if (p.isActive) {
+                shapes.drawSquare(ctx, p.p, p.s, p.c);
             }
         }
     };
