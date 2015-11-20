@@ -41,10 +41,10 @@ Gamepad.update = function () {
 
     if (Gamepad.debugOn) {
         Gamepad.g[0].axes.forEach(function(axis){
-            _debug.addMsg("axis"+i, axis);
+            gDebug.addMsg("axis"+i, axis);
             i++;
         });
 
-        _debug.addMsg("buttons", Gamepad.g[0].buttons.map(function(item, i){return i +":" + item.pressed.toString() + "," + item.value;}).join("\n"));
+        gDebug.addMsg("buttons", Gamepad.g[0].buttons.map(function(item, i){return i +":" + item.pressed.toString() + "," + item.value;}).join("\n"));
     }
 };

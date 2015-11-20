@@ -13,17 +13,20 @@ var Game = function () {
         _ctx = _canvas.getContext("2d");
         _height = _canvas.clientHeight;
         _width = _canvas.clientWidth;
-//        _height = 1800;
-//        _width = 1800;
     }
 
     this.init = function () {
         _env.setBounds([0, 0, _width, _height]);
         _env.init();
 
+        this.reset();
+    }
+
+    this.reset = function () {
+        var innerBound = _width * 0.2;
         _env.add(new Player({
                 name: "player",
-                pos: [getRandi(0, _width), getRandi(0, _height)],
+                pos: [getRandi(innerBound, _width - innerBound), getRandi(innerBound, _height - innerBound)],
                 dir: [getRandf(-1, 1), getRandf(-1, 1)],
                 radius: 5,
                 color: "black",
@@ -32,11 +35,12 @@ var Game = function () {
 
         var speed = 5;
         for (var i = 0; i < 5; i++){
+            var d = [getRandf(-1, 1), getRandf(-1, 1)];
             var newCrit = new Crit({
-                name: "" + i,
+                name: "enemy_" + i,
                 pos: [getRandi(0, _width), getRandi(0, _height)],
-                dir: [getRandf(-1, 1), getRandf(-1, 1)],
-                vel: [getRandf(-speed, speed), getRandf(-speed, speed)],
+                dir: d,
+                vel: v2.muls(d, speed),
                 radius: getRandi(10, 15),
                 color: "black",
                 env: _env
@@ -48,13 +52,27 @@ var Game = function () {
 
     this.tick = function (delta) {
         _ctx.clearRect(0, 0, _width, _height);
-        _debug.clear();
-    //	_debug.addMsg("delta",delta.toFixed(2));
+        gDebug.clear();
+
+        var player = _env.getEntityByName("player");
+        if (player && player.isDead) {
+            _ctx.save();
+            _ctx.font = "18px Consolas";
+            _ctx.fillText("GAME OVER", _width / 2, _height / 2 - 30);
+            _ctx.font = "10px Consolas";
+            _ctx.fillText("press R to reset", _width / 2, _height / 2);
+            _ctx.restore();
+
+            if (Keyb.get("R").pressed) {
+                this.reset();
+            }
+        }
 
         _env.update(delta);
         _env.draw(_ctx);
 
-        _debug.print();
+        Keyb.update();
+        gDebug.print();
     };
 
 }

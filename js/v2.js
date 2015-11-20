@@ -184,7 +184,7 @@ v2.intersLineCircle = function (line, circle) {
     }
 }
 
-v2.inters = function (ps1, pe1, ps2, pe2) {
+v2.intersLineLine = function (line1, line2) {
   // Get A,B,C of first line - points : ps1 to pe1
   var A1 = pe1[1]-ps1[1];
   var B1 = ps1[0]-pe1[0];

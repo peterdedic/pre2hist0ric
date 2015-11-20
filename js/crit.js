@@ -27,8 +27,8 @@ var Crit = function (args) {
 Crit.prototype.draw = function (ctx) {
 	"use strict";
 
-    var x = this.body.pos[0];
-    var y = this.body.pos[1];
+    var x = this.body.pos[0],
+        y = this.body.pos[1];
 
 
     ctx.strokeStyle = "rgb(211, 84, 118)";
@@ -69,9 +69,15 @@ Crit.prototype.die = function () {
     "use strict";
     this.env.createExplosion(this);
     this.isActive = false;
+    this.isDead = true;
 };
 
 Crit.prototype.stop = function () {
     "use strict";
 	this.vel = [0, 0];
+};
+
+Crit.prototype.handleCollision = function (collisionData) {
+    "use strict";
+
 };

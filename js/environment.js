@@ -23,7 +23,7 @@ var Environment = function () {
 	
 	this.add = function(entity) {
 		for (var i = 0; i < this.entities.length; i++) {
-			if (!this.entities[i].isActive) {
+			if (this.entities[i].name === entity.name) {
 				this.entities[i] = entity;
 				return;
 			}
@@ -36,13 +36,13 @@ var Environment = function () {
 		for (var i = 0; i < this.entities.length; i++) {
 			var et = this.entities[i];
 			if (et.isActive && et.update) {
-				// et.nearbyEnts = this.getNearbyEntities(et);
 				et.update(deltaTime);
 				wrapAround(et);
 			}
 		}
         _particleEngine.update(deltaTime);
 
+        this.findCollisions();
 //		this.resolveMessages();
 	}
 	
@@ -55,14 +55,6 @@ var Environment = function () {
 
         _particleEngine.draw(context);
 	}
-
-//    this.addMsg = function(msg) {
-//        this.messages.push(msg);
-//    }
-//
-//	this.resolveMessages = function() {
-//
-//	}
 	
 	this.getEntityByName = function(name) {
 		for (var i=0; i<this.entities.length; i++) { 
@@ -71,27 +63,6 @@ var Environment = function () {
 			}
 		}
 		return null;
-	}
-	
-	this.getNearbyEntities = function(entity) {
-		var eList = [];
-		for (var i=0; i<this.entities.length; i++){
-			var e = this.entities[i];
-			if (e.name === entity.name)
-				continue;
-				
-			var d = v2.dist(entity.body.pos, e.body.pos); //entity.getDistToEnt(e);
-			
-//            _debug.addMsg("e."+i, d);
-			if (e.isActive && d <= this._ENTITY_PROXIMITY_LIMIT + e.body.size) {
-				//_debug.drawLine(entity.body.pos, e.body.pos, "rgba(255,0,0,0.2)");
-				eList.push({
-					entity: e,
-					distance: d
-				});
-			}
-		}
-		return eList;
 	}
 
     this.getEntitiesByLine = function (line, sort) {
@@ -120,23 +91,38 @@ var Environment = function () {
     }
 
     this.createExplosion = function (entity) {
-        var i = 0,
-            p = [],
-            x, y, angle;
-        for (i = 0; i < 150; i += 1) {
-            angle = Math.random() * Math.PI * 2;
-            x = Math.cos(angle) * entity.body.size;
-            y = Math.sin(angle) * entity.body.size;
+        _particleEngine.createExplosionOnPerimeter(entity.body.pos, entity.body.size);
+    }
 
-            p.push(new Particle(
-                [entity.body.pos[0] + x, entity.body.pos[1] + y],   // position
-                v2.norm([x, y]),                                 // direction of movement
-                getRandf(20, 25),                       // speed
-                getRandi(500, 800),                     // lifespan
-                getRandi(1, 5),
-                entity.color));
+    this.findCollisions = function () {
+//        console.log(this);
+        var i=0,
+            j=0,
+            e1,
+            e2;
+
+        for (i=0; i<this.entities.length; i++) {
+            e1 = this.entities[i];
+            if (!e1.isActive) { continue; }
+            for (j=i+1; j<this.entities.length; j++) {
+                e2 = this.entities[j];
+                if (!e2.isActive) { continue; }
+
+                var dist = v2.dist(e1.body.pos, e2.body.pos);
+                if (dist <= e1.body.size + e2.body.size) {
+                    gDebug.text += e1.name + " X " + e2.name + "\n";
+
+                    var dir = v2.norm(v2.subv(e2.body.pos, e1.body.pos)),
+                        amount = (e1.body.size + e2.body.size) - dist;
+
+                    e1.body.pos = v2.addv(e1.body.pos, v2.muls(v2.neg(dir), amount/2));
+                    e2.body.pos = v2.addv(e2.body.pos, v2.muls(dir, amount/2));
+
+                    e1.handleCollision({overlap: amount});
+                    e2.handleCollision({overlap: amount});
+                }
+            }
         }
-        _particleEngine.setParticles(p);
     }
 	
 	function wrapAround(entity){

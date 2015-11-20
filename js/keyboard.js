@@ -1,4 +1,4 @@
-var Keyb = {};
+var Keyb = Keyb || {};
 
 Keyb.SpecialKeyNames = {
 	8: "backspace",  9: "tab",       13: "enter",    16: "shift",
@@ -20,26 +20,46 @@ Keyb.getKeyName = function (keyCode){
 
 Keyb.keys = [];
 
-Keyb.onKeyUp = function(event){
-	var key = Keyb.getKeyName(event.keyCode);
+Keyb.get = function (keyName) {
+    var k = Keyb.keys[keyName];
+    if (k) {
+        return k;
+    } else {
+        return Keyb.keys[keyName] = {
+            up: false,
+            down: false,
+            pressed: false
+        };
+    }
+}
 
-	Keyb.keys[key] = false;
-	//console.log('up', key);
-    //event.cancelBubble = true;
+Keyb.onKeyUp = function(event){
+	var keyName = Keyb.getKeyName(event.keyCode),
+        key = Keyb.get(keyName);
+
+    key.pressed = key.down ? true : false;;
+    key.down = false;
+    key.up = true;
 };
 
 Keyb.onKeyDown = function(event){
-//    console.log(event);
-	var key = Keyb.getKeyName(event.keyCode);
+	var keyName = Keyb.getKeyName(event.keyCode),
+        key = Keyb.get(keyName);
 
-	if (!Keyb.keys[key])
-		Keyb.keys[key] = false;
-
-	if (Keyb.keys[key] == false){
-		Keyb.keys[key] = true;
-	}
-    //event.cancelBubble = true;
+    key.down = true;
+    key.up = false;
+    key.pressed = false;
 };
+
+Keyb.update = function () {
+    var k = {};
+    for (k in Keyb.keys) {
+        if (Keyb.keys.hasOwnProperty(k)) {
+//            gDebug.text += k + ", " + Keyb.keys[k].pressed + "\n";
+            Keyb.keys[k].pressed = false;
+        }
+    }
+}
 
 document.addEventListener("keydown", Keyb.onKeyDown, false);
 document.addEventListener("keyup",   Keyb.onKeyUp,   false);

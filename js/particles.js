@@ -86,3 +86,49 @@ var ParticleEngine = function (max) {
         }
     };
 };
+
+ParticleEngine.prototype.createExplosionOnPerimeter = function (position, radius, color) {
+    "use strict";
+    var i = 0,
+        p = [],
+        x = 0,
+        y = 0,
+        angle = 0;
+    for (i = 0; i < 150; i += 1) {
+        angle = Math.random() * Math.PI * 2;
+        x = Math.cos(angle) * radius;
+        y = Math.sin(angle) * radius;
+
+        p.push(new Particle(
+            [position[0] + x, position[1] + y],   // position
+            v2.norm([x, y]),                                 // direction of movement
+            getRandf(20, 25),                       // speed
+            getRandi(500, 800),                     // lifespan
+            getRandi(1, 5),
+            color
+        ));
+    }
+    this.setParticles(p);
+};
+
+ParticleEngine.prototype.createExplosionAtPosition = function (position, color) {
+    "use strict";
+    var i = 0,
+        p = [],
+        x = 0,
+        y = 0;
+    for (i = 0; i < 150; i += 1) {
+        x = getRandf(-1, 1);
+        y = getRandf(-1, 1);
+
+        p.push(new Particle(
+            [position[0] + x, position[1] + y],   // position
+            v2.norm([x, y]),                                 // direction of movement
+            getRandf(20, 25),                       // speed
+            getRandi(500, 800),                     // lifespan
+            getRandi(1, 5),
+            color
+        ));
+    }
+    this.setParticles(p);
+};

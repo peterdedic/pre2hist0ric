@@ -125,20 +125,20 @@ document.getElementById("c").addEventListener("click", function(e) {
 //
 //
 //    var line = {A: gScreenCenter, B: [e.offsetX, e.offsetY]};
-////    _debug.drawLine(gCtx, line, "black");
-//    _debug.drawCircle(gCtx, gCircle, "red");
+////    gDebug.drawLine(gCtx, line, "black");
+//    gDebug.drawCircle(gCtx, gCircle, "red");
 //
 //    var cPoint = v2.closestPointOnSegment(gCircle.center, line);
 //    var intersections = v2.segmentCircleIntersetion(line, gCircle);
 //    var AB = v2.subv(line.B, line.A);
-//    _debug.addMsg("result", intersections.join(","));
+//    gDebug.addMsg("result", intersections.join(","));
 //    intersections.forEach(function (p) {
 //        v2.draw(gCtx, v2.muls(AB, p), line.A, "black");
-//        _debug.drawPoint(gCtx, p, "red");
+//        gDebug.drawPoint(gCtx, p, "red");
 //    });
 //
-//    _debug.drawPoint(gCtx, cPoint, "green");
-//    _debug.print();
+//    gDebug.drawPoint(gCtx, cPoint, "green");
+//    gDebug.print();
 //});
 
 
@@ -195,16 +195,17 @@ function degToRad(degrees) {
 
 var _ctx = document.getElementById("c").getContext("2d");
 // get html element which serves as area where all the debug text is getting dumped periodically  
-var _debug = function() {}
-_debug._on = true;
-_debug.dMsg = [];
-_debug.text = "";
-_debug.w = document.getElementById("debug");
-_debug.clear = function() {
+var gDebug = function() {}
+gDebug._on = true;
+gDebug.dMsg = [];
+gDebug.text = "";
+gDebug.w = document.getElementById("debug");
+gDebug.clear = function() {
 	this.dMsg = [];
     this.w.innerHTML = "";
+    this.text = "";
 };
-_debug.addMsg = function() {
+gDebug.addMsg = function() {
 //    console.log(arguments);
 	if (this._on) {
         var id = arguments[0];
@@ -231,7 +232,7 @@ _debug.addMsg = function() {
 
 	}
 };
-_debug.print = function() {
+gDebug.print = function() {
     var t = "";
     for (var i=0; i<this.dMsg.length; i++){
 //        t += "[" + this.dMsg[i].ts.toLocaleTimeString() + "] ";
@@ -241,7 +242,7 @@ _debug.print = function() {
     this.w.innerHTML = t;
     this.w.innerHTML += this.text;
 }
-_debug.drawLine = function(ctx, line, color) {
+gDebug.drawLine = function(ctx, line, color) {
 	if (this._on) {
 		var c = color || "black";
 		ctx.strokeStyle = c;
@@ -251,7 +252,7 @@ _debug.drawLine = function(ctx, line, color) {
 		ctx.stroke();
 	}
 };
-_debug.drawPoint = function(ctx, point, color) {
+gDebug.drawPoint = function(ctx, point, color) {
 	if (this._on) {
 		var c = color || "black";
 		ctx.strokeStyle = c;
@@ -263,7 +264,7 @@ _debug.drawPoint = function(ctx, point, color) {
 		ctx.stroke();
 	}
 };
-_debug.drawCircle = function(ctx, circle, color) {
+gDebug.drawCircle = function(ctx, circle, color) {
     "use strict";
 	if (this._on) {
         var c = color || "black";
@@ -272,7 +273,7 @@ _debug.drawCircle = function(ctx, circle, color) {
         ctx.arc(circle.center[0], circle.center[1], circle.radius, 0, 2 * Math.PI);
         ctx.stroke();
 
-        _debug.drawPoint(ctx, circle.center, c);
+        gDebug.drawPoint(ctx, circle.center, c);
 	}
 };
 	</script>
