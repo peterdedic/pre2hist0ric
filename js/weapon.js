@@ -13,7 +13,8 @@ weapons.Laser = function (entity, wm) {
     this.rayEnd = [0, 0];
 
     this.fire = function () {
-        this.isFiring = true;
+        if (this.entity.energy > 1)
+            this.isFiring = true;
     };
 
     this.update = function (dt) {
@@ -21,6 +22,7 @@ weapons.Laser = function (entity, wm) {
         this.pos = v2.addv(this.entity.body.pos, this.entity[wm]);
 
         if (this.isFiring) {
+            this.entity.energy -= 1;
             var laserLineEnd = v2.addv(this.pos, v2.muls(this.dir, this.range)),
                 laserLine = {A: this.pos, B: laserLineEnd},
                 entsList = this.entity.env.getEntitiesByLine(laserLine, true),

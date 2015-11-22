@@ -177,5 +177,5 @@ Player.prototype.attack = function () {
 
 Player.prototype.handleCollision = function (collisionData) {
     "use strict";
-    //this.takeDmg({amount: collisionData.overlap * 5});
+    this.takeDmg({amount: collisionData.overlap * 5});
 };
