@@ -27,7 +27,7 @@ var Game = function () {
         _env.add(new Player({
                 name: "player",
                 pos: [getRandi(innerBound, _width - innerBound), getRandi(innerBound, _height - innerBound)],
-                dir: [getRandf(-1, 1), getRandf(-1, 1)],
+                dir: [0, -1],////[getRandf(-1, 1), getRandf(-1, 1)],
                 radius: 5,
                 color: "black",
                 env: _env

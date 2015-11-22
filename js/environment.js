@@ -33,19 +33,40 @@ var Environment = function () {
 	}
 		
 	this.update = function (deltaTime) {
-		for (var i = 0; i < this.entities.length; i++) {
-			var et = this.entities[i];
+        var i = 0,
+            et = {};
+
+        for (i = 0; i < this.entities.length; i++) {
+            et = this.entities[i];
+            if (et.isActive && et.updateControls) {
+				et.updateControls(deltaTime);
+			}
+        }
+
+        for (i = 0; i < this.entities.length; i++) {
+            et = this.entities[i];
+            if (et.isActive && et.updateMovement) {
+				et.updateMovement(deltaTime);
+			}
+        }
+
+        this.findAndresolveCollisions();
+
+        for (i = 0; i < this.entities.length; i++) {
+            wrapAround(this.entities[i]);
+		}
+
+		for (i = 0; i < this.entities.length; i++) {
+			et = this.entities[i];
 			if (et.isActive && et.update) {
 				et.update(deltaTime);
-				wrapAround(et);
 			}
 		}
         _particleEngine.update(deltaTime);
 
-        this.findCollisions();
 //		this.resolveMessages();
 	}
-	
+
 	this.draw = function (context) {
 		for (var i = 0; i < this.entities.length; i++) {
             var et = this.entities[i];
@@ -94,7 +115,7 @@ var Environment = function () {
         _particleEngine.createExplosionOnPerimeter(entity.body.pos, entity.body.size);
     }
 
-    this.findCollisions = function () {
+    this.findAndresolveCollisions = function () {
 //        console.log(this);
         var i=0,
             j=0,
@@ -115,8 +136,13 @@ var Environment = function () {
                     var dir = v2.norm(v2.subv(e2.body.pos, e1.body.pos)),
                         amount = (e1.body.size + e2.body.size) - dist;
 
-                    e1.body.pos = v2.addv(e1.body.pos, v2.muls(v2.neg(dir), amount/2));
-                    e2.body.pos = v2.addv(e2.body.pos, v2.muls(dir, amount/2));
+                    var aaa = v2.muls(dir, amount / 2);
+                    e1.body.pos = v2.addv(e1.body.pos, v2.neg(aaa));
+                    e2.body.pos = v2.addv(e2.body.pos, aaa);
+
+
+                    e1.body.add(v2.neg(aaa));
+                    e2.body.add(aaa);
 
                     e1.handleCollision({overlap: amount});
                     e2.handleCollision({overlap: amount});

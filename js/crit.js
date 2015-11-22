@@ -16,7 +16,7 @@ var Crit = function (args) {
     this.health = this.maxHealth;
     this.damage = 1;
     this.isDead = false;
-    this.dir = v2.norm(args.dir) || [0, 1];
+//    this.dir = v2.norm(args.dir) || [0, 1];
 	
     this.color = args.color || "black";
 	this.body = new PhysBody(args);
@@ -42,7 +42,7 @@ Crit.prototype.draw = function (ctx) {
     ctx.textAlign = "center";
     ctx.fillText(this.name, x, y);
 	// ------ DRAW BODY ----------------
-    shapes.drawCircleArrow(ctx, this.body.pos, this.dir, this.body.size, this.color);
+    shapes.drawCircleArrow(ctx, this.body.pos, this.body.dir, this.body.size, this.color);
 };
 
 Crit.prototype.update = function (deltaTime) {
@@ -51,10 +51,12 @@ Crit.prototype.update = function (deltaTime) {
     if (this.health < 0) {
         this.die();
     }
-
-	// --------- APPLY VELOCITY ---------
-	this.body.update(deltaTime);
 };
+
+Crit.prototype.updateMovement = function (deltaTime) {
+    // --------- APPLY VELOCITY ---------
+	this.body.update(deltaTime);
+}
 
 Crit.prototype.takeDmg = function (dmgInfo) {
     "use strict";
