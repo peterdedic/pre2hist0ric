@@ -79,7 +79,7 @@ v2.clone = function(v) {
 
 v2.rotate = function(v, angle) {
 	angle = degToRad(angle);
-	var r = [0,0];
+	var r = [0, 0];
 	r[0] = v[0] * Math.cos(angle) - v[1] * Math.sin(angle);
     r[1] = v[0] * Math.sin(angle) + v[1] * Math.cos(angle);
 	
@@ -219,3 +219,56 @@ var Ray = function (position, direction) {
     this.p = position;
     this.d = direction;
 }
+
+
+// ---------------------------------------
+//			M A T R I X 2
+// ---------------------------------------
+
+var m3 = m3 || {};
+
+m3.createRot = function (angle) {
+    angle = degToRad(angle);
+    var c = Math.cos(angle),
+        s = Math.sin(angle);
+    return [
+        c, -s, 0,
+        s,  c, 0,
+        0,  0, 1
+    ];
+};
+
+m3.createTrans = function (T) {
+    return [1,    0,    0,
+            0,    1,    0,
+            T[0], T[1], 1];
+};
+m3.mul = function (a, b) {
+    var a = a[0], b = a[1], c = a[2],
+        d = a[3], e = a[4], f = a[5],
+        g = a[6], h = a[7], i = a[8],
+
+        l = b[0], m = b[1], n = b[2],
+        o = b[3], p = b[4], q = b[5],
+        r = b[6], s = b[7], t = b[8],
+        out = [];
+
+    out[0] = a*l + b*l + c*l;
+    out[1] = a*m + b*m + c*m;
+    out[2] = a*n + b*n + c*n;
+    out[3] = d*o + e*o + f*o;
+    out[4] = d*p + e*p + f*p;
+    out[5] = d*q + e*q + f*q;
+    out[6] = g*r + h*r + i*r;
+    out[7] = g*s + h*s + i*s;
+    out[8] = g*t + h*t + i*t;
+    return out;
+};
+m3.mulv = function (m, v) {
+    var x = v[0],
+        y = v[1];
+    return [
+        m[0]*x + m[1]*y + m[2],
+        m[3]*x + m[4]*y + m[5]
+    ];
+};

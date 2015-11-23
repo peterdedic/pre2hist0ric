@@ -25,8 +25,8 @@ var Player = function (args) {
 	this.body = new PhysBody(args);
     this.weaponMount1 = v2.muls(v2.norm([-1,-1]), this.body.size + 3);
     this.weaponMount2 = v2.muls(v2.norm([ 1,-1]), this.body.size + 3);
-    this.weapon1 = new weapons.Laser(this, "weaponMount1");
-    this.weapon2 = new weapons.Laser(this, "weaponMount2");
+    this.weapon1 = new weapons.Laser(this, "weaponMount1", v2.norm([-1,-1]));
+    this.weapon2 = new weapons.Laser(this, "weaponMount2", v2.norm([ 1,-1]));
 
     //this.ctx = {};
 };

@@ -1,9 +1,11 @@
+//8.14.6364 .... 666.53 KB
+
 var weapons = weapons || {};
 
-weapons.Laser = function (entity, wm) {
+weapons.Laser = function (entity, wm, dir) {
     "use strict";
     this.pos = [0, 0];
-    this.dir = [1, 0];
+    this.dir = dir;
 
     this.damage = 1;
     this.range = 300;
@@ -55,6 +57,7 @@ weapons.Laser = function (entity, wm) {
         }
         this.isFiring = false;
 
+        gDebug.drawLine(ctx, {A: this.pos, B: v2.addv(this.pos, v2.muls(this.dir, 5))}, "black");
         // ------ DRAW AIM -----------------
         shapes.drawPoint(ctx, {point: v2.addv(this.pos, v2.muls(this.dir, this.range)), color: "orange"});
     };
