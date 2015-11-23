@@ -22,6 +22,10 @@ var Game = function () {
         this.reset();
     }
 
+    this.getLevel = function () {
+        return _env;
+    }
+
     this.reset = function () {
         var innerBound = _width * 0.2;
         _env.add(new Player({
@@ -36,7 +40,7 @@ var Game = function () {
         var speed = 5;
         for (var i = 0; i < 5; i++){
             var d = [getRandf(-1, 1), getRandf(-1, 1)];
-            var newCrit = new Crit({
+            var newCrit = new Player({
                 name: "enemy_" + i,
                 pos: [getRandi(0, _width), getRandi(0, _height)],
                 dir: d,
@@ -46,8 +50,55 @@ var Game = function () {
                 env: _env
             });
 
+            newCrit.updateControls = function () {};
             _env.add(newCrit);
         }
+
+
+//        var test_obj = {
+//            name: "test",
+//            isActive: true,
+//            body: new Body({pos: [_width / 2, _height / 2]}),
+//            updateControls: function () {
+//                if (Keyb.get("left").down)
+//                    this.body.rot(5);
+//                if (Keyb.get("right").down)
+//                    this.body.rot(-5);
+//                if (Keyb.get("W").down)
+//                    this.body.add([0, -1]);
+//            },
+//            updateMovement: function (deltaTime) {
+//                this.body.update(deltaTime);
+//            },
+//            draw: function(ctx) {
+//                shapes.drawBasicShip(ctx, this.body.trans, "red");
+//            }
+//        }
+//
+//        var gun = {
+//            name: "test_attachment",
+//            isActive: true,
+//            body: new Body({pos: [10, 10]}),
+//            parent: test_obj,
+//            updateControls: function () {
+//                if (Keyb.get("O").down)
+//                    this.body.rot(5);
+//                if (Keyb.get("P").down)
+//                    this.body.rot(-5);
+//            },
+//            updateMovement: function (deltaTime) {
+//                this.body.update(deltaTime);
+//            },
+//            draw: function (ctx) {
+//                var t = this.body.trans;
+//                if (this.parent)
+//                    t = m3.mul(this.body.trans, this.parent.body.trans);
+//                shapes.drawBasicShip(ctx, t, "green");
+//            }
+//        }
+
+//        _env.add(test_obj);
+//        _env.add(gun);
     }
 
     this.tick = function (delta) {

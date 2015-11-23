@@ -243,25 +243,25 @@ m3.createTrans = function (T) {
             0,    1,    0,
             T[0], T[1], 1];
 };
-m3.mul = function (a, b) {
-    var a = a[0], b = a[1], c = a[2],
-        d = a[3], e = a[4], f = a[5],
-        g = a[6], h = a[7], i = a[8],
+m3.mul = function (M, N) {
+    var a = M[0], b = M[1], c = M[2],
+        d = M[3], e = M[4], f = M[5],
+        g = M[6], h = M[7], i = M[8],
 
-        l = b[0], m = b[1], n = b[2],
-        o = b[3], p = b[4], q = b[5],
-        r = b[6], s = b[7], t = b[8],
+        l = N[0], m = N[1], n = N[2],
+        o = N[3], p = N[4], q = N[5],
+        r = N[6], s = N[7], t = N[8],
         out = [];
 
-    out[0] = a*l + b*l + c*l;
-    out[1] = a*m + b*m + c*m;
-    out[2] = a*n + b*n + c*n;
-    out[3] = d*o + e*o + f*o;
-    out[4] = d*p + e*p + f*p;
-    out[5] = d*q + e*q + f*q;
-    out[6] = g*r + h*r + i*r;
-    out[7] = g*s + h*s + i*s;
-    out[8] = g*t + h*t + i*t;
+    out[0] = a*l + b*o + c*r;
+    out[1] = a*m + b*p + c*s;
+    out[2] = a*n + b*q + c*t;
+    out[3] = d*l + e*o + f*r;
+    out[4] = d*m + e*p + f*s;
+    out[5] = d*n + e*q + f*t;
+    out[6] = g*l + h*o + i*r;
+    out[7] = g*m + h*p + i*s;
+    out[8] = g*n + h*q + i*t;
     return out;
 };
 m3.mulv = function (m, v) {

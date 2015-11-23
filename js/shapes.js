@@ -31,6 +31,24 @@ shapes.drawCircleArrow = function (ctx, origin, dir, radius, bcolor, acolor) {
     shapes.drawCircle(ctx, origin, radius, bcolor);
 };
 
+shapes.drawBasicShip = function(ctx, tm, color) {
+    ctx.save();
+    ctx.transform(tm[0],tm[1],tm[3],tm[4],tm[6],tm[7]);
+    var w = 10,
+        h = 20;
+    ctx.strokeStyle=color;
+    ctx.strokeRect(-w/2, -h/2, w, h);
+
+    ctx.beginPath();
+    ctx.moveTo(-w/2, -h/2);
+    ctx.lineTo(w/2, -h/2);
+    ctx.lineTo(0, -h/2 - 10);
+    ctx.lineTo(-w/2, -h/2);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
 shapes.drawArrow = function(ctx, settings) {
     "use strict";
     var s = settings.origin || [0, 0],

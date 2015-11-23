@@ -131,8 +131,6 @@ var Environment = function () {
 
                 var dist = v2.dist(e1.body.pos, e2.body.pos);
                 if (dist <= e1.body.size + e2.body.size) {
-                    gDebug.text += e1.name + " X " + e2.name + "\n";
-
                     var dir = v2.norm(v2.subv(e2.body.pos, e1.body.pos)),
                         amount = (e1.body.size + e2.body.size) - dist;
 
